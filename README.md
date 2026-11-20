@@ -9,7 +9,7 @@ Team Unity project for the PlayXana / Xsolla hackathon. Team of 4, everyone writ
 | Setting | Value |
 |---|---|
 | **Unity** | **`6000.6.10f1`** (Unity 6.6) — exact version, including the patch |
-| Template | `TODO: 2D (URP) / 3D (URP)` |
+| Template | **Universal 3D (URP)** |
 | Target platform | **Windows** (standalone `.exe`, no web build) |
 
 > The source of truth is `ProjectSettings/ProjectVersion.txt`. Unity Hub will offer to install
