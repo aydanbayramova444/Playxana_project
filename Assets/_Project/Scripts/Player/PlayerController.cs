@@ -5,9 +5,9 @@ using UnityEngine.InputSystem;
 namespace Game.Player
 {
     /// <summary>
-    /// Placeholder third-person movement: camera-relative walk / sprint / jump on a CharacterController.
+    /// First-person movement on a CharacterController: walk / sprint / jump relative to where the player faces.
+    /// Turning is done by <see cref="FirstPersonLook"/> on the child camera.
     /// Input comes from project-wide actions (Assets/InputSystem_Actions.inputactions, map "Player").
-    /// Replace or extend once the game concept is decided.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
@@ -15,21 +15,18 @@ namespace Game.Player
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float sprintSpeed = 8f;
-        [SerializeField] private float rotationSpeed = 12f;
 
         [Header("Jump & Gravity")]
         [SerializeField] private float jumpHeight = 1.2f;
         [SerializeField] private float gravity = -20f;
-
-        [Header("References")]
-        [Tooltip("Movement is relative to this camera. Defaults to Camera.main.")]
-        [SerializeField] private Transform cameraTransform;
 
         private CharacterController _controller;
         private InputAction _move;
         private InputAction _jump;
         private InputAction _sprint;
         private float _verticalVelocity;
+
+        public bool IsGrounded => _controller.isGrounded;
 
         private void Awake()
         {
@@ -41,25 +38,16 @@ namespace Game.Player
             _sprint = actions.FindAction("Player/Sprint", true);
         }
 
-        private void Start()
-        {
-            if (cameraTransform == null && Camera.main != null)
-                cameraTransform = Camera.main.transform;
-        }
-
         private void Update()
         {
             var gm = GameManager.Instance;
             if (gm != null && gm.State != GameState.Playing) return;
 
-            Vector3 direction = GetMoveDirection(_move.ReadValue<Vector2>());
-            float speed = _sprint.IsPressed() ? sprintSpeed : moveSpeed;
+            Vector2 input = _move.ReadValue<Vector2>();
+            Vector3 direction = transform.forward * input.y + transform.right * input.x;
+            if (direction.sqrMagnitude > 1f) direction.Normalize();
 
-            if (direction.sqrMagnitude > 0.0001f)
-            {
-                Quaternion target = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.Slerp(transform.rotation, target, rotationSpeed * Time.deltaTime);
-            }
+            float speed = _sprint.IsPressed() ? sprintSpeed : moveSpeed;
 
             if (_controller.isGrounded && _verticalVelocity < 0f)
                 _verticalVelocity = -2f; // keeps the controller snapped to the ground
@@ -71,21 +59,6 @@ namespace Game.Player
 
             Vector3 velocity = direction * speed + Vector3.up * _verticalVelocity;
             _controller.Move(velocity * Time.deltaTime);
-        }
-
-        private Vector3 GetMoveDirection(Vector2 input)
-        {
-            Vector3 forward = Vector3.forward;
-            Vector3 right = Vector3.right;
-
-            if (cameraTransform != null)
-            {
-                forward = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up).normalized;
-                right = Vector3.ProjectOnPlane(cameraTransform.right, Vector3.up).normalized;
-            }
-
-            Vector3 direction = forward * input.y + right * input.x;
-            return direction.sqrMagnitude > 1f ? direction.normalized : direction;
         }
     }
 }

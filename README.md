@@ -104,9 +104,10 @@ Assets/
 | `GameManager` | `Scripts/Core` | Created automatically before any scene loads — don't put it in scenes. Owns state (`Playing`/`Paused`/`GameOver`/`Victory`), time scale, cursor. `Esc` toggles pause. |
 | `GameEvents` | `Scripts/Core` | Global event bus. Subscribe in `OnEnable`, unsubscribe in `OnDisable`. Add new events there. |
 | `SceneLoader` | `Scripts/Core` | `SceneLoader.Load("Main")`, `SceneLoader.ReloadCurrent()`. |
-| `PlayerController` | `Scripts/Player` | **Placeholder** 3rd-person movement (WASD, Shift sprint, Space jump). |
-| `ThirdPersonCamera` | `Scripts/Player` | **Placeholder** orbit camera (mouse look, wall collision). |
-| `Main.unity` + `Player.prefab` | `Scenes/`, `Prefabs/` | Test level: ground, boxes, player, camera. |
+| `PlayerController` | `Scripts/Player` | First-person movement on a `CharacterController` (WASD, Shift sprint, Space jump). |
+| `FirstPersonLook` | `Scripts/Player` | Mouse look on the camera: yaw turns the player, pitch tilts the camera. |
+| `Player.prefab` | `Prefabs/` | Player root (`CharacterController` + `PlayerController`) → `Camera` child at eye height (`FirstPersonLook`). The scene has no separate camera. |
+| `Main.unity` | `Scenes/` | Test level: light, ground, boxes, player. |
 | Input | `Assets/InputSystem_Actions.inputactions` | Project-wide actions: `InputSystem.actions.FindAction("Player/Move")`. |
 
 **Your personal dev scene:** *Tools → Project Setup → 2. Create My Dev Scene* — copies `Main` into
