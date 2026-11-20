@@ -34,8 +34,12 @@ namespace Game.EditorTools
             Directory.CreateDirectory(ScenesDir);
             Directory.CreateDirectory(PrefabsDir);
 
-            // Default scene = Main Camera + Directional Light (with URP data already attached).
+            // Default scene = Main Camera + Directional Light. The camera lives inside the Player
+            // prefab (first person), so the default one is removed.
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
+            foreach (var go in scene.GetRootGameObjects())
+                if (go.GetComponent<Camera>() != null)
+                    Object.DestroyImmediate(go);
 
             // Ground + a few boxes to have a sense of scale and something to jump on.
             var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -52,17 +56,6 @@ namespace Game.EditorTools
             var playerPrefab = CreatePlayerPrefab();
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
             player.transform.position = Vector3.zero;
-
-            // Camera follows the player.
-            var cam = Camera.main != null ? Camera.main : Object.FindAnyObjectByType<Camera>();
-            if (cam != null)
-            {
-                cam.transform.SetPositionAndRotation(new Vector3(0f, 3f, -5f), Quaternion.Euler(15f, 0f, 0f));
-                var follow = cam.gameObject.AddComponent<ThirdPersonCamera>();
-                var so = new SerializedObject(follow);
-                so.FindProperty("target").objectReferenceValue = player.transform;
-                so.ApplyModifiedPropertiesWithoutUndo();
-            }
 
             EditorSceneManager.SaveScene(scene, MainScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainScenePath, true) };
@@ -114,10 +107,21 @@ namespace Game.EditorTools
             root.AddComponent<PlayerController>();
 
             // Visuals only — collision is handled by the CharacterController.
+            // Only casts a shadow: the first-person camera sits inside it.
             var body = CreateVisual(PrimitiveType.Capsule, "Body", root.transform,
                 new Vector3(0f, 1f, 0f), new Vector3(0.8f, 1f, 0.8f));
-            CreateVisual(PrimitiveType.Cube, "Nose (facing)", body.transform,
-                new Vector3(0f, 0.5f, 0.5f), new Vector3(0.25f, 0.2f, 0.4f));
+            body.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+
+            // First-person camera at eye height.
+            var camGo = new GameObject("Camera");
+            camGo.tag = "MainCamera";
+            camGo.transform.SetParent(root.transform, false);
+            camGo.transform.localPosition = new Vector3(0f, 1.6f, 0f);
+            var cam = camGo.AddComponent<Camera>();
+            cam.fieldOfView = 70f;
+            cam.nearClipPlane = 0.05f;
+            camGo.AddComponent<AudioListener>();
+            camGo.AddComponent<FirstPersonLook>();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
             Object.DestroyImmediate(root);
