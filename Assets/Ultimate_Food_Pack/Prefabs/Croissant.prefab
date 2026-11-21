@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -9161183356103478450, guid: 2c32885c0911a4f28a221add8e54f090, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1382055973388742178}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2c32885c0911a4f28a221add8e54f090, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3825388974358962204}
   m_SourcePrefab: {fileID: 100100000, guid: 2c32885c0911a4f28a221add8e54f090, type: 3}
 --- !u!1 &1545854877113042196 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 7399595321660171842, guid: 2c32885c0911a4f28a221add8e54f090, type: 3}
+--- !u!1 &1832511248497298187 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 2c32885c0911a4f28a221add8e54f090, type: 3}
+  m_PrefabInstance: {fileID: 1562479229069424218}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3825388974358962204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832511248497298187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Croissant
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

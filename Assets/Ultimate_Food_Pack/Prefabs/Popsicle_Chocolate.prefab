@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6725742414168708588, guid: 401f5aba1d6374c1faa0e13e6f1063a7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3117518780908602423}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 401f5aba1d6374c1faa0e13e6f1063a7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4961322557111429286}
   m_SourcePrefab: {fileID: 100100000, guid: 401f5aba1d6374c1faa0e13e6f1063a7, type: 3}
 --- !u!1 &6246206275882054209 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -2619697404474854241, guid: 401f5aba1d6374c1faa0e13e6f1063a7, type: 3}
+--- !u!1 &520501405040188156 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 401f5aba1d6374c1faa0e13e6f1063a7, type: 3}
+  m_PrefabInstance: {fileID: 862536724751722413}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4961322557111429286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 520501405040188156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Chocolate Popsicle
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

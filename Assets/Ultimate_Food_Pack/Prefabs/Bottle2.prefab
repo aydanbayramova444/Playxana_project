@@ -84,6 +84,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 164731817080335896, guid: a19e0c8d1d99944849a2ff297956d00d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2151887051978013590}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a19e0c8d1d99944849a2ff297956d00d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2292494617261884510}
   m_SourcePrefab: {fileID: 100100000, guid: a19e0c8d1d99944849a2ff297956d00d, type: 3}
 --- !u!1 &6675441959168242 stripped
 GameObject:
@@ -193,3 +196,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 5630276584203872045, guid: a19e0c8d1d99944849a2ff297956d00d, type: 3}
+--- !u!1 &1053807272699624379 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a19e0c8d1d99944849a2ff297956d00d, type: 3}
+  m_PrefabInstance: {fileID: 170725501700589290}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2292494617261884510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1053807272699624379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Bottle
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 240615046890180858, guid: a783953dc193f48818413c2fd585be68, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2880766891486584275}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a783953dc193f48818413c2fd585be68, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7819123378794462463}
   m_SourcePrefab: {fileID: 100100000, guid: a783953dc193f48818413c2fd585be68, type: 3}
 --- !u!1 &1330771610220358211 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 3254803668702225294, guid: a783953dc193f48818413c2fd585be68, type: 3}
+--- !u!1 &2152833284409001960 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a783953dc193f48818413c2fd585be68, type: 3}
+  m_PrefabInstance: {fileID: 1234284981432040121}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7819123378794462463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2152833284409001960}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Banana
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

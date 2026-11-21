@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8094252289226110772, guid: e7b4485e47767429ca728d02592cfa5a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3159319246327687820}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e7b4485e47767429ca728d02592cfa5a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5148175147407934996}
   m_SourcePrefab: {fileID: 100100000, guid: e7b4485e47767429ca728d02592cfa5a, type: 3}
 --- !u!1 &8265941298916093001 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5456177593236885709, guid: e7b4485e47767429ca728d02592cfa5a, type: 3}
+--- !u!1 &8479018552169931189 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e7b4485e47767429ca728d02592cfa5a, type: 3}
+  m_PrefabInstance: {fileID: 8749068709110488292}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5148175147407934996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8479018552169931189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Broccoli
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

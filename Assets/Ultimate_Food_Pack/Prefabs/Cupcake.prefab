@@ -77,6 +77,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -6927957332341975089, guid: 6d52791e88f87429589914f718d5fe29, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6570816437606591511}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6d52791e88f87429589914f718d5fe29, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7913149601596174031}
   m_SourcePrefab: {fileID: 100100000, guid: 6d52791e88f87429589914f718d5fe29, type: 3}
 --- !u!1 &3049998222093313090 stripped
 GameObject:
@@ -159,3 +162,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4797752686219949378, guid: 6d52791e88f87429589914f718d5fe29, type: 3}
+--- !u!1 &6909734902410094406 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6d52791e88f87429589914f718d5fe29, type: 3}
+  m_PrefabInstance: {fileID: 5991237318567565847}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7913149601596174031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6909734902410094406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Cupcake
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

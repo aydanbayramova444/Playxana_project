@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -648949464133248529, guid: 33f3d1b2eaccb40d0a3fe5c5f35eefe3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4923197407669817181}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 33f3d1b2eaccb40d0a3fe5c5f35eefe3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6332584285644546869}
   m_SourcePrefab: {fileID: 100100000, guid: 33f3d1b2eaccb40d0a3fe5c5f35eefe3, type: 3}
 --- !u!1 &8521665175769417649 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 3283773889287841420, guid: 33f3d1b2eaccb40d0a3fe5c5f35eefe3, type: 3}
+--- !u!1 &899619746342298383 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 33f3d1b2eaccb40d0a3fe5c5f35eefe3, type: 3}
+  m_PrefabInstance: {fileID: 53338088359190110}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6332584285644546869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 899619746342298383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Cheese Slices
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

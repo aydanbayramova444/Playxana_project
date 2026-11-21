@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -7688428212790135885, guid: f7bd7945d251444fa955950bb0d563bc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5858639326068623078}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f7bd7945d251444fa955950bb0d563bc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1066087432571063739}
   m_SourcePrefab: {fileID: 100100000, guid: f7bd7945d251444fa955950bb0d563bc, type: 3}
 --- !u!1 &4763182555762878304 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -6355445990658465556, guid: f7bd7945d251444fa955950bb0d563bc, type: 3}
+--- !u!1 &6599576495043455362 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f7bd7945d251444fa955950bb0d563bc, type: 3}
+  m_PrefabInstance: {fileID: 6293514443793372371}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1066087432571063739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6599576495043455362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Burned Egg
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

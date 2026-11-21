@@ -77,6 +77,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -7763852486230778193, guid: 2e1d7b030d88349ef8c1e7dcebfa4cdf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7402959998559179886}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2e1d7b030d88349ef8c1e7dcebfa4cdf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 476218272050796636}
   m_SourcePrefab: {fileID: 100100000, guid: 2e1d7b030d88349ef8c1e7dcebfa4cdf, type: 3}
 --- !u!1 &654561265131520679 stripped
 GameObject:
@@ -159,3 +162,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -2918894142752504792, guid: 2e1d7b030d88349ef8c1e7dcebfa4cdf, type: 3}
+--- !u!1 &7426997726639282231 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 2e1d7b030d88349ef8c1e7dcebfa4cdf, type: 3}
+  m_PrefabInstance: {fileID: 7768875130066494822}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &476218272050796636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7426997726639282231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Fish
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -735005779763301178, guid: 6e3ff1ed3194341a88e8582bfa2e984c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3480541527470033454}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6e3ff1ed3194341a88e8582bfa2e984c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6469803129294187836}
   m_SourcePrefab: {fileID: 100100000, guid: 6e3ff1ed3194341a88e8582bfa2e984c, type: 3}
 --- !u!1 &2320976058743941062 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 7706181007602558157, guid: 6e3ff1ed3194341a88e8582bfa2e984c, type: 3}
+--- !u!1 &4776496178818462558 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6e3ff1ed3194341a88e8582bfa2e984c, type: 3}
+  m_PrefabInstance: {fileID: 5659032581311630863}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6469803129294187836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4776496178818462558}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Chicken Leg
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

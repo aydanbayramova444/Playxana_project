@@ -77,6 +77,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -6717612459658971753, guid: 5307dbc6f8ea94c929aa9dfcbaad2511, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4659324187786719302}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5307dbc6f8ea94c929aa9dfcbaad2511, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7838874298735941124}
   m_SourcePrefab: {fileID: 100100000, guid: 5307dbc6f8ea94c929aa9dfcbaad2511, type: 3}
 --- !u!1 &1461186424412401287 stripped
 GameObject:
@@ -159,3 +162,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -2753730253347219470, guid: 5307dbc6f8ea94c929aa9dfcbaad2511, type: 3}
+--- !u!1 &7250466745562443742 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 5307dbc6f8ea94c929aa9dfcbaad2511, type: 3}
+  m_PrefabInstance: {fileID: 7520937464761225871}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7838874298735941124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7250466745562443742}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Ice Cream
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

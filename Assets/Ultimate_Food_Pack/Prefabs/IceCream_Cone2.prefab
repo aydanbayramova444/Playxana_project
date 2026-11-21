@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8712781504151782446, guid: ba941acd9149449c29bef007d7feee7a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8441352144009655460}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ba941acd9149449c29bef007d7feee7a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1671161695508961315}
   m_SourcePrefab: {fileID: 100100000, guid: ba941acd9149449c29bef007d7feee7a, type: 3}
 --- !u!1 &5579467930407004012 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -3680187036336618188, guid: ba941acd9149449c29bef007d7feee7a, type: 3}
+--- !u!1 &5096617060929806831 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ba941acd9149449c29bef007d7feee7a, type: 3}
+  m_PrefabInstance: {fileID: 5367089982373076158}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1671161695508961315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5096617060929806831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Ice Cream Cone
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

@@ -77,6 +77,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3705718881833309908, guid: 2ef39d95412574d71b9676e723721f55, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6407736571861887840}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 2ef39d95412574d71b9676e723721f55, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 135741648487950713}
   m_SourcePrefab: {fileID: 100100000, guid: 2ef39d95412574d71b9676e723721f55, type: 3}
 --- !u!1 &112726629751026367 stripped
 GameObject:
@@ -159,3 +162,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4390594745249864414, guid: 2ef39d95412574d71b9676e723721f55, type: 3}
+--- !u!1 &9012113189667755401 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 2ef39d95412574d71b9676e723721f55, type: 3}
+  m_PrefabInstance: {fileID: 8201086683896047832}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &135741648487950713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9012113189667755401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Avocado
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

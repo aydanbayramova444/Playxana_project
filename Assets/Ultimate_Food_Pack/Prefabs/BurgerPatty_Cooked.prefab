@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -2977452311600205449, guid: 0aa6d33ad3c8f447c961e478695311f8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 374801111110415983}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0aa6d33ad3c8f447c961e478695311f8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 106818316443603065}
   m_SourcePrefab: {fileID: 100100000, guid: 0aa6d33ad3c8f447c961e478695311f8, type: 3}
 --- !u!1 &6462010000400632224 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 6671109145137661687, guid: 0aa6d33ad3c8f447c961e478695311f8, type: 3}
+--- !u!1 &270555655927793030 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 0aa6d33ad3c8f447c961e478695311f8, type: 3}
+  m_PrefabInstance: {fileID: 1080966433174829271}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &106818316443603065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270555655927793030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Cooked Burger Patty
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

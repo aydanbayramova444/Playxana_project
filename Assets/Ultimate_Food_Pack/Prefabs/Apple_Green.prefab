@@ -77,6 +77,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -7830328761667377435, guid: 18936d46ead2049c982c8235fc820d9d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8179288853802879545}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 18936d46ead2049c982c8235fc820d9d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6711528708549558243}
   m_SourcePrefab: {fileID: 100100000, guid: 18936d46ead2049c982c8235fc820d9d, type: 3}
 --- !u!1 &1236502157449685617 stripped
 GameObject:
@@ -159,3 +162,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4415960076089402885, guid: 18936d46ead2049c982c8235fc820d9d, type: 3}
+--- !u!1 &1061878105088291269 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 18936d46ead2049c982c8235fc820d9d, type: 3}
+  m_PrefabInstance: {fileID: 179551706227428500}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6711528708549558243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1061878105088291269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Green Apple
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

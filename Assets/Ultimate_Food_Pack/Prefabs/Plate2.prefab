@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6018298595774423095, guid: b6f5546a5f9e8452eaaf4b6e3a170cee, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8776208906656165257}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b6f5546a5f9e8452eaaf4b6e3a170cee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4330743475471916896}
   m_SourcePrefab: {fileID: 100100000, guid: b6f5546a5f9e8452eaaf4b6e3a170cee, type: 3}
 --- !u!1 &4727394220645855379 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 1745348314804794609, guid: b6f5546a5f9e8452eaaf4b6e3a170cee, type: 3}
+--- !u!1 &2224550071947783669 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b6f5546a5f9e8452eaaf4b6e3a170cee, type: 3}
+  m_PrefabInstance: {fileID: 1305579146202140836}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4330743475471916896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2224550071947783669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Plate
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

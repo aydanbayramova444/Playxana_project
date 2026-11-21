@@ -41,8 +41,8 @@ namespace Game.Interaction
             if (_rigidbody == null)
             {
                 _rigidbody = gameObject.AddComponent<Rigidbody>();
-                _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
-                _rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+                _rigidbody.interpolation = RigidbodyInterpolation.None;
+                _rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             }
         }
 

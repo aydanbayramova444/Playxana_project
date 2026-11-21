@@ -84,6 +84,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -4182674944383262793, guid: 7d06cf415ee4f43efaa62e802e1f1621, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1266435972137477133}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d06cf415ee4f43efaa62e802e1f1621, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8488739033962108828}
   m_SourcePrefab: {fileID: 100100000, guid: 7d06cf415ee4f43efaa62e802e1f1621, type: 3}
 --- !u!1 &2643156346502281318 stripped
 GameObject:
@@ -193,3 +196,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -4368800392365356094, guid: 7d06cf415ee4f43efaa62e802e1f1621, type: 3}
+--- !u!1 &4391982854895320278 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d06cf415ee4f43efaa62e802e1f1621, type: 3}
+  m_PrefabInstance: {fileID: 3472870092149686663}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8488739033962108828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4391982854895320278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Hotdog
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

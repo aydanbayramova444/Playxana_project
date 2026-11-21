@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -4018607707512101116, guid: 32bc4cfa41ead4765b6f100f792a4b20, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5753807819973004086}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 32bc4cfa41ead4765b6f100f792a4b20, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8767601408616556047}
   m_SourcePrefab: {fileID: 100100000, guid: 32bc4cfa41ead4765b6f100f792a4b20, type: 3}
 --- !u!1 &8194298568471256635 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4960007970337106627, guid: 32bc4cfa41ead4765b6f100f792a4b20, type: 3}
+--- !u!1 &3840901312404096110 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 32bc4cfa41ead4765b6f100f792a4b20, type: 3}
+  m_PrefabInstance: {fileID: 4146960614740244799}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8767601408616556047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3840901312404096110}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Donut
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

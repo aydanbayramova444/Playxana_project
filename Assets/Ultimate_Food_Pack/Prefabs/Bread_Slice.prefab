@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4048095677142626246, guid: 3c1e66e1a6f774bab8a68143ed05f79c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2564028444333883833}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3c1e66e1a6f774bab8a68143ed05f79c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3556250815836144626}
   m_SourcePrefab: {fileID: 100100000, guid: 3c1e66e1a6f774bab8a68143ed05f79c, type: 3}
 --- !u!1 &460828338167535488 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5681151430864810280, guid: 3c1e66e1a6f774bab8a68143ed05f79c, type: 3}
+--- !u!1 &2089999354775449234 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3c1e66e1a6f774bab8a68143ed05f79c, type: 3}
+  m_PrefabInstance: {fileID: 1279095441327297475}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3556250815836144626
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2089999354775449234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Bread Slice
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

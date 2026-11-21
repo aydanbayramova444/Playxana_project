@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3436346584541156976, guid: b9a6ef364b6114496b690f00eaca85cf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6303058883893321081}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b9a6ef364b6114496b690f00eaca85cf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4148038270284357649}
   m_SourcePrefab: {fileID: 100100000, guid: b9a6ef364b6114496b690f00eaca85cf, type: 3}
 --- !u!1 &3018882902226874927 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 637588104482053183, guid: b9a6ef364b6114496b690f00eaca85cf, type: 3}
+--- !u!1 &762243942501931278 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: b9a6ef364b6114496b690f00eaca85cf, type: 3}
+  m_PrefabInstance: {fileID: 456377599087109215}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4148038270284357649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 762243942501931278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Waffle
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

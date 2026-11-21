@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6542305025787410675, guid: 1372d7b5f9980453a9545f9c7d06b45c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5349088478266448521}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1372d7b5f9980453a9545f9c7d06b45c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7322384975361535849}
   m_SourcePrefab: {fileID: 100100000, guid: 1372d7b5f9980453a9545f9c7d06b45c, type: 3}
 --- !u!1 &242971341166572982 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5744782575074940621, guid: 1372d7b5f9980453a9545f9c7d06b45c, type: 3}
+--- !u!1 &1261617322951657054 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1372d7b5f9980453a9545f9c7d06b45c, type: 3}
+  m_PrefabInstance: {fileID: 2108603356645587727}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7322384975361535849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1261617322951657054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Carrot
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

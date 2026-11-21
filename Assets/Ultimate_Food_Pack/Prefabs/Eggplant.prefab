@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6668774485276872155, guid: de0eeb950470341c2b5764aa98a24a02, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1361848826103851082}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: de0eeb950470341c2b5764aa98a24a02, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544298821793869046}
   m_SourcePrefab: {fileID: 100100000, guid: de0eeb950470341c2b5764aa98a24a02, type: 3}
 --- !u!1 &2992399164444215885 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -174173104872326774, guid: de0eeb950470341c2b5764aa98a24a02, type: 3}
+--- !u!1 &8775956504664570567 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: de0eeb950470341c2b5764aa98a24a02, type: 3}
+  m_PrefabInstance: {fileID: 8433865652233717654}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6544298821793869046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8775956504664570567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Eggplant
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

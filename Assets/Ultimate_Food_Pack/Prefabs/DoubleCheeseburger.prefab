@@ -84,6 +84,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -5841671121789462156, guid: e2f37eec867944dada9cbcc7a874cedc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4379139203870382155}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e2f37eec867944dada9cbcc7a874cedc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2411217867162752702}
   m_SourcePrefab: {fileID: 100100000, guid: e2f37eec867944dada9cbcc7a874cedc, type: 3}
 --- !u!1 &3611047094315885576 stripped
 GameObject:
@@ -193,3 +196,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 4034029235658322025, guid: e2f37eec867944dada9cbcc7a874cedc, type: 3}
+--- !u!1 &7615574996707853869 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e2f37eec867944dada9cbcc7a874cedc, type: 3}
+  m_PrefabInstance: {fileID: 7308951652287085436}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2411217867162752702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7615574996707853869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Double Cheeseburger
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

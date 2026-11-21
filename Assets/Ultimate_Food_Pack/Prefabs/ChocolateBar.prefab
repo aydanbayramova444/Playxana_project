@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -3166873324045643553, guid: ddabd6188cac94369a510c58a23d0df2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4996185111032300393}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ddabd6188cac94369a510c58a23d0df2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2783898441178565560}
   m_SourcePrefab: {fileID: 100100000, guid: ddabd6188cac94369a510c58a23d0df2, type: 3}
 --- !u!1 &3725238397378974032 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -1158169737323674172, guid: ddabd6188cac94369a510c58a23d0df2, type: 3}
+--- !u!1 &7745870549196160222 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ddabd6188cac94369a510c58a23d0df2, type: 3}
+  m_PrefabInstance: {fileID: 7475893915652063631}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2783898441178565560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7745870549196160222}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Chocolate Bar
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

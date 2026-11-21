@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -1250856308902874325, guid: 9f898df30d6624405ba2e29092184487, type: 3}
       insertIndex: -1
       addedObject: {fileID: 390006991815274345}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9f898df30d6624405ba2e29092184487, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3536856618736225485}
   m_SourcePrefab: {fileID: 100100000, guid: 9f898df30d6624405ba2e29092184487, type: 3}
 --- !u!1 &8060837804926989943 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8386228186139524993, guid: 9f898df30d6624405ba2e29092184487, type: 3}
+--- !u!1 &988716345488242701 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9f898df30d6624405ba2e29092184487, type: 3}
+  m_PrefabInstance: {fileID: 106337716471317852}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3536856618736225485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 988716345488242701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Cooking Pot
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2162376152438168710, guid: 29807139a5cff4cf9809527abbfdbe36, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2804865594709886653}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 29807139a5cff4cf9809527abbfdbe36, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1741099945226178333}
   m_SourcePrefab: {fileID: 100100000, guid: 29807139a5cff4cf9809527abbfdbe36, type: 3}
 --- !u!1 &1646256988030773908 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 3131604623017062822, guid: 29807139a5cff4cf9809527abbfdbe36, type: 3}
+--- !u!1 &295982434099612483 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 29807139a5cff4cf9809527abbfdbe36, type: 3}
+  m_PrefabInstance: {fileID: 638072596114339346}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1741099945226178333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 295982434099612483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Burned Steak
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

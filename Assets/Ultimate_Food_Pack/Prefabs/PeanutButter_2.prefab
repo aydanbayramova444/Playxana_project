@@ -77,6 +77,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -946181433934787251, guid: 43d2bb35a6cbd4351b581f73fbaed40e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1336889716884339008}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 43d2bb35a6cbd4351b581f73fbaed40e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 592086268413078163}
   m_SourcePrefab: {fileID: 100100000, guid: 43d2bb35a6cbd4351b581f73fbaed40e, type: 3}
 --- !u!1 &1135481178082515099 stripped
 GameObject:
@@ -159,3 +162,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -6264113869640231584, guid: 43d2bb35a6cbd4351b581f73fbaed40e, type: 3}
+--- !u!1 &8204748403565029511 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 43d2bb35a6cbd4351b581f73fbaed40e, type: 3}
+  m_PrefabInstance: {fileID: 9015211268029502934}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &592086268413078163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8204748403565029511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Peanut Butter
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

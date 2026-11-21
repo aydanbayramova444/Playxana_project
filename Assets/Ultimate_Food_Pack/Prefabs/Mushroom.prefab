@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -1440903273877469446, guid: 9e34622b14123413fa8c97eec453f5d7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3841934644456413474}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9e34622b14123413fa8c97eec453f5d7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2351205023016295131}
   m_SourcePrefab: {fileID: 100100000, guid: 9e34622b14123413fa8c97eec453f5d7, type: 3}
 --- !u!1 &5184572041885392754 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 3035422002789159068, guid: 9e34622b14123413fa8c97eec453f5d7, type: 3}
+--- !u!1 &2824538750231192793 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9e34622b14123413fa8c97eec453f5d7, type: 3}
+  m_PrefabInstance: {fileID: 3167067200772512136}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2351205023016295131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824538750231192793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Mushroom
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

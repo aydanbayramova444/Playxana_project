@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7116954895779325266, guid: 46a016fc6aaf345ab875f4d1110250be, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7201946075563540997}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 46a016fc6aaf345ab875f4d1110250be, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7016233700008191650}
   m_SourcePrefab: {fileID: 100100000, guid: 46a016fc6aaf345ab875f4d1110250be, type: 3}
 --- !u!1 &8067277388888007943 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 9099235451821848446, guid: 46a016fc6aaf345ab875f4d1110250be, type: 3}
+--- !u!1 &139984452349574404 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 46a016fc6aaf345ab875f4d1110250be, type: 3}
+  m_PrefabInstance: {fileID: 950324185334448213}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7016233700008191650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 139984452349574404}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Cooked Sausage
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

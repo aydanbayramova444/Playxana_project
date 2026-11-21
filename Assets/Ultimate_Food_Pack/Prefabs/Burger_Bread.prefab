@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 425162964892071987, guid: a63114e8d5d134d9b8370dec53dc971f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4616976746678372721}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a63114e8d5d134d9b8370dec53dc971f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2419757814714770986}
   m_SourcePrefab: {fileID: 100100000, guid: a63114e8d5d134d9b8370dec53dc971f, type: 3}
 --- !u!1 &4233822340174686287 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -6974383482548360807, guid: a63114e8d5d134d9b8370dec53dc971f, type: 3}
+--- !u!1 &3739848458291359021 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a63114e8d5d134d9b8370dec53dc971f, type: 3}
+  m_PrefabInstance: {fileID: 4550875922914513020}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2419757814714770986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3739848458291359021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Burger Bun
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2322796443624394274, guid: 652348d370525468fa54e22cecf14f4a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 279975108469828688}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 652348d370525468fa54e22cecf14f4a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8242083976015303598}
   m_SourcePrefab: {fileID: 100100000, guid: 652348d370525468fa54e22cecf14f4a, type: 3}
 --- !u!1 &8115358013895710671 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 5845892663018122297, guid: 652348d370525468fa54e22cecf14f4a, type: 3}
+--- !u!1 &6657122631631201468 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 652348d370525468fa54e22cecf14f4a, type: 3}
+  m_PrefabInstance: {fileID: 5810681539093748205}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8242083976015303598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6657122631631201468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Bread
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

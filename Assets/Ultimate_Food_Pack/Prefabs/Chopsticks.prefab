@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3337411347218377606, guid: ec8738a6e43194287bc652accd7c0544, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1793939493215591422}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ec8738a6e43194287bc652accd7c0544, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 572291938662820363}
   m_SourcePrefab: {fileID: 100100000, guid: ec8738a6e43194287bc652accd7c0544, type: 3}
 --- !u!1 &60826687485155368 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -8166982690249091743, guid: ec8738a6e43194287bc652accd7c0544, type: 3}
+--- !u!1 &2470696830005448447 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ec8738a6e43194287bc652accd7c0544, type: 3}
+  m_PrefabInstance: {fileID: 3353145962924454830}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &572291938662820363
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2470696830005448447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Chopsticks
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

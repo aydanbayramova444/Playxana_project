@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -5156771589423803847, guid: 3e820e07bc31a424383905541183e849, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6022466587936712903}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3e820e07bc31a424383905541183e849, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4560626305133831038}
   m_SourcePrefab: {fileID: 100100000, guid: 3e820e07bc31a424383905541183e849, type: 3}
 --- !u!1 &86464442176781636 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -2206487299408327564, guid: 3e820e07bc31a424383905541183e849, type: 3}
+--- !u!1 &8749314265343237405 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3e820e07bc31a424383905541183e849, type: 3}
+  m_PrefabInstance: {fileID: 8478773030297247820}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4560626305133831038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8749314265343237405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Strawberry Popsicle
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

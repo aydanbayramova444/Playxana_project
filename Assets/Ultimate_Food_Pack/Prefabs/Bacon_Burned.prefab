@@ -77,6 +77,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -1053951038196364376, guid: 125f8259fe6f94a9c960ad8b90dc58d5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8943833947772368953}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 125f8259fe6f94a9c960ad8b90dc58d5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3647824293930160529}
   m_SourcePrefab: {fileID: 100100000, guid: 125f8259fe6f94a9c960ad8b90dc58d5, type: 3}
 --- !u!1 &6910981942219787951 stripped
 GameObject:
@@ -159,3 +162,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -9146580256065850025, guid: 125f8259fe6f94a9c960ad8b90dc58d5, type: 3}
+--- !u!1 &2483253305112639574 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 125f8259fe6f94a9c960ad8b90dc58d5, type: 3}
+  m_PrefabInstance: {fileID: 3366194879787992327}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3647824293930160529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2483253305112639574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Burned Bacon
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

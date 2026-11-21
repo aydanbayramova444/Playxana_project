@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -5301053350653789512, guid: f82dc2d516d224d929a418f7c427a10c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8865141187182935757}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f82dc2d516d224d929a418f7c427a10c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5683964717837577061}
   m_SourcePrefab: {fileID: 100100000, guid: f82dc2d516d224d929a418f7c427a10c, type: 3}
 --- !u!1 &3158136662991987318 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 1065528921654128930, guid: f82dc2d516d224d929a418f7c427a10c, type: 3}
+--- !u!1 &1260019770978837919 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f82dc2d516d224d929a418f7c427a10c, type: 3}
+  m_PrefabInstance: {fileID: 2142891673768990926}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5683964717837577061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1260019770978837919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Mayo
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7037593576110593147, guid: e29ded874767b47ca8a1a4f764a7071e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4443044994344821656}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e29ded874767b47ca8a1a4f764a7071e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1621562166864075037}
   m_SourcePrefab: {fileID: 100100000, guid: e29ded874767b47ca8a1a4f764a7071e, type: 3}
 --- !u!1 &4781785652432443456 stripped
 GameObject:
@@ -91,3 +94,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -4366889588795333233, guid: e29ded874767b47ca8a1a4f764a7071e, type: 3}
+--- !u!1 &3402389755447619946 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e29ded874767b47ca8a1a4f764a7071e, type: 3}
+  m_PrefabInstance: {fileID: 2591503437408439355}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1621562166864075037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3402389755447619946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Coconut
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

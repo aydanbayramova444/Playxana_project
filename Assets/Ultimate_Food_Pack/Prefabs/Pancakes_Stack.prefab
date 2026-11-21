@@ -84,6 +84,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7488708272456823010, guid: ab6ddc126fc7244a99829d362cf95d4c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3366989947738341088}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ab6ddc126fc7244a99829d362cf95d4c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3542737731073213005}
   m_SourcePrefab: {fileID: 100100000, guid: ab6ddc126fc7244a99829d362cf95d4c, type: 3}
 --- !u!1 &235239351341015379 stripped
 GameObject:
@@ -193,3 +196,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -2743196766561904929, guid: ab6ddc126fc7244a99829d362cf95d4c, type: 3}
+--- !u!1 &7525490097790364896 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ab6ddc126fc7244a99829d362cf95d4c, type: 3}
+  m_PrefabInstance: {fileID: 7254877399858188721}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3542737731073213005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7525490097790364896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Pancake Stack
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

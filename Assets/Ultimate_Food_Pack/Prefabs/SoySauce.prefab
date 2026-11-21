@@ -70,6 +70,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2757529901556428654, guid: 1b9b4c3bc738c417e8dc4dbaf9258172, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6114971580644796014}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1b9b4c3bc738c417e8dc4dbaf9258172, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2202754162203419456}
   m_SourcePrefab: {fileID: 100100000, guid: 1b9b4c3bc738c417e8dc4dbaf9258172, type: 3}
 --- !u!1 &1333469186904910618 stripped
 GameObject:
@@ -125,3 +128,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 5478192577418615822, guid: 1b9b4c3bc738c417e8dc4dbaf9258172, type: 3}
+--- !u!1 &6176914160726575256 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1b9b4c3bc738c417e8dc4dbaf9258172, type: 3}
+  m_PrefabInstance: {fileID: 6447368381749081545}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2202754162203419456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6176914160726575256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Soy Sauce
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 

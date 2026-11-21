@@ -77,6 +77,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 532462495737552669, guid: 712f2bc9524e343f7be1e816efb9f415, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6907917390128254131}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 712f2bc9524e343f7be1e816efb9f415, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1135154547262468458}
   m_SourcePrefab: {fileID: 100100000, guid: 712f2bc9524e343f7be1e816efb9f415, type: 3}
 --- !u!1 &499247536141751075 stripped
 GameObject:
@@ -159,3 +162,30 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 6105624382737108841, guid: 712f2bc9524e343f7be1e816efb9f415, type: 3}
+--- !u!1 &2662720078506090395 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 712f2bc9524e343f7be1e816efb9f415, type: 3}
+  m_PrefabInstance: {fileID: 2896527165731037898}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1135154547262468458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2662720078506090395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Sushi Roll
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: 
