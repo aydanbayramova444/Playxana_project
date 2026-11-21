@@ -28,7 +28,15 @@ namespace Game.Level2
         [Tooltip("0 = drives straight and calm, 1 = full apocalypse chaos.")]
         [Range(0f, 1f)] public float chaos = 0.6f;
 
+        [Header("Aggression")]
+        [Tooltip("How much the car goes for the player: 0 = ignores you, 1 = hunts you down.")]
+        [Range(0f, 1f)] public float aggression = 0.6f;
+        [Tooltip("The car notices the player this far in front of it (metres).")]
+        public float noticeDistance = 30f;
+
         private Rigidbody _rb;
+        private Transform _player;
+        private float _huntUntil;
         private float _speed, _targetSpeed, _dir, _laneX, _phase, _nextEvent;
 
         private void Awake()
@@ -45,7 +53,20 @@ namespace Game.Level2
             _speed = _targetSpeed = Random.Range(minSpeed, maxSpeed);
             _phase = Random.value * 10f;
             _nextEvent = Time.time + Random.Range(1f, 4f);
+            var pc = FindAnyObjectByType<PlayerController>();
+            if (pc != null) _player = pc.transform;
         }
+
+        /// <summary>Player is in front of the car (in its driving direction), close enough, and not in a safe zone.</summary>
+        private bool PlayerAhead()
+        {
+            if (_player == null) return false;
+            if (Level2Manager.Instance != null && Level2Manager.Instance.InSafeZone) return false;
+            float ahead = (_player.position.z - _rb.position.z) * _dir;
+            return ahead > 3f && ahead < noticeDistance;
+        }
+
+        private bool Hunting => Time.time < _huntUntil;
 
         private void FixedUpdate()
         {
@@ -54,15 +75,23 @@ namespace Game.Level2
 
             if (Time.time >= _nextEvent) ChaosEvent();
 
+            // Hunting: keep steering at the player's lane while they're still in front
+            if (Hunting)
+            {
+                if (PlayerAhead()) _laneX = Mathf.Clamp(_player.position.x, -halfWidth, halfWidth);
+                else _huntUntil = 0f; // passed them / they hid: back to normal chaos
+            }
+
             _speed = Mathf.MoveTowards(_speed, _targetSpeed, 12f * Time.fixedDeltaTime);
 
             Vector3 pos = _rb.position;
-            float swerve = Mathf.Sin((Time.time + _phase) * (0.6f + chaos)) * 2.5f * chaos;
+            float swerve = Hunting ? 0f : Mathf.Sin((Time.time + _phase) * (0.6f + chaos)) * 2.5f * chaos;
             float targetX = Mathf.Clamp(_laneX + swerve, -halfWidth, halfWidth);
 
             Vector3 next = pos;
             next.z += _dir * _speed * Time.fixedDeltaTime;
-            next.x = Mathf.MoveTowards(pos.x, targetX, (2f + 4f * chaos) * Time.fixedDeltaTime);
+            float steer = (2f + 4f * chaos) * (Hunting ? 1f + aggression : 1f); // hunting cars steer harder
+            next.x = Mathf.MoveTowards(pos.x, targetX, steer * Time.fixedDeltaTime);
             next.x = KeepOutOfSafeZones(next);
 
             // Off one end of the road → come back at the other end
@@ -95,6 +124,16 @@ namespace Game.Level2
         private void ChaosEvent()
         {
             _nextEvent = Time.time + Random.Range(1.5f, 5f) * (1.3f - chaos);
+
+            // Aggressive: go for the player — swerve into their lane and floor it
+            if (PlayerAhead() && Random.value < aggression * 0.7f)
+            {
+                _laneX = Mathf.Clamp(_player.position.x, -halfWidth, halfWidth);
+                _targetSpeed = maxSpeed * (1f + 0.35f * aggression);
+                _huntUntil = Time.time + 2f + 2f * aggression;
+                _nextEvent = Time.time + 2f + 2f * aggression; // no other event while hunting
+                return;
+            }
 
             float roll = Random.value;
             if (roll < 0.35f)
