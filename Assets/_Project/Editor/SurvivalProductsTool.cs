@@ -29,6 +29,12 @@ namespace Game.EditorTools
         const string ListPath     = "Assets/_Project/ScriptableObjects/ShoppingList_Test.asset";
         const string MainScene    = "Assets/_Project/Scenes/Main.unity";
 
+        /// <summary>
+        /// Size of every product compared to real life (1 = real size). Bigger reads better at PS1
+        /// resolution. Max ~1.6: the 5 L water jug must still fit between two shelf boards.
+        /// </summary>
+        const float ItemSize = 1.5f;
+
         // id (= Pickup.ItemId = ItemData.id), name in the game, how many a shelf starts with,
         // and whether it goes on the test shopping list
         static readonly (string id, string name, int stock, bool onList)[] Products =
@@ -229,6 +235,7 @@ namespace Game.EditorTools
             var model = new GameObject("Model").transform;
             model.SetParent(root.transform, false);
             build(model);
+            model.localScale = Vector3.one * ItemSize; // the collider below is measured after scaling
 
             // One simple box around the whole model
             var bounds = new Bounds(Vector3.zero, Vector3.zero);
