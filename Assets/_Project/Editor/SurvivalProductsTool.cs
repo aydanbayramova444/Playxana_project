@@ -160,8 +160,9 @@ namespace Game.EditorTools
 
             SavePickup("matches", "Matches", 0.05f, root =>
             {
-                Part(PrimitiveType.Cube, "Box", root, new Vector3(0f, 0.0175f, 0f),
-                    new Vector3(0.05f, 0.035f, 0.015f), matches).transform.localRotation =
+                // Big "kitchen matches" box (a real pocket box is too tiny to see at PS1 resolution)
+                Part(PrimitiveType.Cube, "Box", root, new Vector3(0f, 0.035f, 0f),
+                    new Vector3(0.1f, 0.07f, 0.03f), matches).transform.localRotation =
                     Quaternion.Euler(0f, 180f, 0f);
             });
 
