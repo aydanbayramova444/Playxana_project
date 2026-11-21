@@ -100,7 +100,7 @@ namespace Game.EditorTools
 
             GameObjectUtility.SetStaticEditorFlags(root, StaticEditorFlags.BatchingStatic |
                 StaticEditorFlags.ContributeGI | StaticEditorFlags.OccluderStatic |
-                StaticEditorFlags.OccludeeStatic | StaticEditorFlags.NavigationStatic);
+                StaticEditorFlags.OccludeeStatic);
             foreach (Transform t in root.transform)
                 GameObjectUtility.SetStaticEditorFlags(t.gameObject, GameObjectUtility.GetStaticEditorFlags(root));
         }
