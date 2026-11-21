@@ -1042,13 +1042,13 @@ MonoBehaviour:
 
     before the shelves run empty.'
   footer: PlayXana Hackathon
-  gameScene: user
+  gameScene: Cutscene
   heroImage: {fileID: 21300000, guid: 727a31659647c48969a7fbd064fc557b, type: 3}
-  skyColor: {r: 0.62, g: 0.86, b: 1, a: 1}
-  mintColor: {r: 0.7, g: 0.95, b: 0.82, a: 1}
-  pinkColor: {r: 1, g: 0.8, b: 0.88, a: 1}
-  inkColor: {r: 0.13, g: 0.17, b: 0.34, a: 1}
-  buttonColor: {r: 1, g: 0.42, b: 0.62, a: 1}
+  pixelHeight: 360
+  darkColor: {r: 0.02, g: 0.02, b: 0.024, a: 1}
+  sickColor: {r: 0.1, g: 0.13, b: 0.1, a: 1}
+  bloodColor: {r: 0.62, g: 0.05, b: 0.05, a: 1}
+  boneColor: {r: 0.8, g: 0.77, b: 0.68, a: 1}
 --- !u!4 &1306493948
 Transform:
   m_ObjectHideFlags: 0
