@@ -116,6 +116,18 @@ namespace Game.EditorTools
         static void Item(string name, Transform parent, string id, string display, PrimitiveType type,
             Vector3 pos, Vector3 scale, Material mat, Quaternion? rot = null)
         {
+            // Real model from Tools → Level → Make Store Pickup Prefabs? Use it.
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PickupPrefabTool.PrefabPath(id));
+            if (prefab != null)
+            {
+                var inst = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
+                inst.name = name;
+                // bottom near the old spot, never under the floor
+                inst.transform.position = new Vector3(pos.x, Mathf.Max(0.01f, pos.y - scale.y), pos.z);
+                return;
+            }
+
+            // Otherwise a grey-box shape
             var go = Model(name, parent, type, pos, scale, mat, rot);
             go.AddComponent<Rigidbody>();
             var p = go.AddComponent<Pickup>();
