@@ -106,8 +106,11 @@ namespace Game.Gameplay
         private void OnItemPlaced(GameObject item, string itemId, GameObject receiver)
         {
             // Only count items put into the cart, not on shelves / in bins.
-            if (receiver == null || !receiver.TryGetComponent(out ItemReceiver r)) return;
-            if (r.ReceiverId != cartReceiverId) return;
+            if (receiver == null) return;
+            string id = receiver.TryGetComponent(out Game.Interaction.ItemSlot slot) ? slot.SlotId
+                      : receiver.TryGetComponent(out ItemReceiver r) ? r.ReceiverId
+                      : null;
+            if (!string.Equals(id, cartReceiverId, System.StringComparison.OrdinalIgnoreCase)) return;
 
             TryCollect(itemId);
         }
@@ -121,7 +124,7 @@ namespace Game.Gameplay
             bool onList = false;
             foreach (Progress p in _entries)
             {
-                if (p.Item.id != itemId) continue;
+                if (!string.Equals(p.Item.id, itemId, System.StringComparison.OrdinalIgnoreCase)) continue;
                 onList = true;
                 if (!p.IsDone)
                 {

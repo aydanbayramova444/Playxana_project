@@ -1,4 +1,5 @@
 using System;
+using Game.Core;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -15,6 +16,9 @@ namespace Game.Interaction
     [AddComponentMenu("Interaction/Item Slot")]
     public class ItemSlot : Interactable
     {
+        [Tooltip("What this slot is, e.g. \"cart\", \"fridge\", \"trash\". The shopping list counts items put in the \"cart\".")]
+        [SerializeField] private string slotId = "";
+
         [Tooltip("Only Pickups with this Item Id fit. Empty = anything.")]
         [SerializeField] private string acceptsItemId = "";
 
@@ -43,6 +47,7 @@ namespace Game.Interaction
         private int _consumedCount;
 
         public string AcceptsItemId => acceptsItemId;
+        public string SlotId => slotId;
 
         public int Count
         {
@@ -69,7 +74,8 @@ namespace Game.Interaction
         private void Reset() => prompt = "Place";
 
         public bool Accepts(Pickup item) =>
-            item != null && (string.IsNullOrEmpty(acceptsItemId) || item.ItemId == acceptsItemId);
+            item != null && (string.IsNullOrEmpty(acceptsItemId) ||
+                             string.Equals(item.ItemId, acceptsItemId, StringComparison.OrdinalIgnoreCase));
 
         public override bool CanInteract(PlayerInteractor player) =>
             player.IsHoldingAnything && Accepts(player.HeldItem) && !IsFull;
@@ -100,6 +106,9 @@ namespace Game.Interaction
         public bool Place(Pickup item)
         {
             if (!Accepts(item) || IsFull) return false;
+
+            // Before a consumed item is destroyed: the shopping list / tasks listen to this.
+            GameEvents.RaiseItemPlaced(item.gameObject, item.ItemId, gameObject);
 
             if (consumeItems)
             {

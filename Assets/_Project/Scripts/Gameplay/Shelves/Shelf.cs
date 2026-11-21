@@ -156,7 +156,7 @@ namespace Game.Gameplay
                 Debug.LogWarning($"[Shelf] '{name}' has no ItemData / prefab.", this);
                 return;
             }
-            if (item.prefab.GetComponent<Pickup>() == null)
+            if (item.prefab.GetComponent<Game.Interaction.Pickup>() == null)
                 Debug.LogWarning($"[Shelf] Prefab of '{item.id}' has no Pickup — the player can't take it. " +
                                  "Use Prefabs/Pickups/Pickup_*.prefab.", this);
 

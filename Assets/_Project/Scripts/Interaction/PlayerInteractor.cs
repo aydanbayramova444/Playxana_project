@@ -59,7 +59,8 @@ namespace Game.Interaction
         private float _holdTimer;
         private bool _waitForRelease;
 
-        public bool IsHolding(string itemId) => HeldItem != null && HeldItem.ItemId == itemId;
+        public bool IsHolding(string itemId) =>
+            HeldItem != null && string.Equals(HeldItem.ItemId, itemId, StringComparison.OrdinalIgnoreCase);
 
         private void Awake()
         {
@@ -99,6 +100,7 @@ namespace Game.Interaction
             item.OnPickedUp();
             HeldItem = item;
             PlacementHelper.SnapTo(item.gameObject, holdPoint, sitOnTop: false);
+            GameEvents.RaiseItemPickedUp(item.gameObject, item.ItemId); // shelves lower their stock
             ItemPickedUp?.Invoke(item);
         }
 
@@ -119,6 +121,7 @@ namespace Game.Interaction
             }
 
             item.OnDropped(cam.forward * dropSpeed);
+            GameEvents.RaiseItemDropped(item.gameObject, item.ItemId);
             ItemDropped?.Invoke(item);
         }
 

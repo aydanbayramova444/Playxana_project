@@ -112,7 +112,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 1
+  m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 2
 --- !u!114 &840967812792680460
@@ -124,11 +124,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 6598835829220073297}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c958616ae41c424cba0af3ab7841dd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Pickup
-  itemId: coconut
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Pickup
   displayName: Coconut
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: coconut
 --- !u!1 &8304400999914013178
 GameObject:
   m_ObjectHideFlags: 0

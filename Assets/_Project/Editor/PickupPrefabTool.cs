@@ -123,10 +123,10 @@ namespace Game.EditorTools
 
                 var rb = root.AddComponent<Rigidbody>();
                 rb.mass = 0.5f;
-                rb.interpolation = RigidbodyInterpolation.Interpolate;
+                rb.interpolation = RigidbodyInterpolation.None; // interpolated + held = item lags behind
                 rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic; // small items: don't fall through
 
-                var pickup = root.AddComponent<Pickup>();
+                var pickup = root.AddComponent<Game.Interaction.Pickup>();
                 var so = new SerializedObject(pickup);
                 so.FindProperty("itemId").stringValue = item.id;
                 so.FindProperty("displayName").stringValue = item.name;

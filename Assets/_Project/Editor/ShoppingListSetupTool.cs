@@ -253,26 +253,25 @@ namespace Game.EditorTools
             EditorUtility.SetDirty(hud);
             PrefabUtility.RecordPrefabInstancePropertyModifications(hud);
 
-            // Player: needs PlayerInteractor to pick things up (added in THIS scene only)
+            // Player position: test items and the cart go in front of it
             var player = Object.FindAnyObjectByType<PlayerController>();
             Vector3 origin = player != null ? player.transform.position : Vector3.zero;
             Vector3 fwd = player != null ? player.transform.forward : Vector3.forward;
             Vector3 right = player != null ? player.transform.right : Vector3.right;
-            if (player != null && player.GetComponent<PlayerInteractor>() == null)
-                player.gameObject.AddComponent<PlayerInteractor>();
+            // The Player prefab already has Game.Interaction.PlayerInteractor — nothing to add.
 
-            // Cart: a cube with ItemReceiver "cart" that eats items
+            // Cart: a cube with an ItemSlot "cart" that eats items (the shopping list counts them)
             if (GameObject.Find("Cart") == null)
             {
                 var cart = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cart.name = "Cart";
                 cart.transform.position = origin + fwd * 3f + Vector3.up * 0.4f;
                 cart.transform.localScale = new Vector3(1f, 0.8f, 0.6f);
-                var receiver = cart.AddComponent<ItemReceiver>();
-                var rso = new SerializedObject(receiver);
-                rso.FindProperty("receiverId").stringValue = "cart";
+                var slot = cart.AddComponent<Game.Interaction.ItemSlot>();
+                var rso = new SerializedObject(slot);
+                rso.FindProperty("slotId").stringValue = "cart";
                 rso.FindProperty("displayName").stringValue = "Cart";
-                rso.FindProperty("promptFormat").stringValue = "Put {item} in {target}";
+                rso.FindProperty("prompt").stringValue = "Put in cart:";
                 rso.FindProperty("consumeItems").boolValue = true;
                 rso.ApplyModifiedPropertiesWithoutUndo();
             }

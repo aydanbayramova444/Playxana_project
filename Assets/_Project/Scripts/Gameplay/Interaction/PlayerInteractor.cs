@@ -65,6 +65,13 @@ namespace Game.Gameplay
 
         private void Awake()
         {
+            // The project uses Game.Interaction.PlayerInteractor now; don't handle E twice.
+            if (GetComponent<Game.Interaction.PlayerInteractor>() != null)
+            {
+                enabled = false;
+                return;
+            }
+
             if (cam == null) cam = GetComponentInChildren<Camera>();
             _interact = InputSystem.actions.FindAction("Player/Interact", true);
 

@@ -183,16 +183,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 260356090}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 087695bfcae26c94d86f59ed547213c2, type: 3}
+  m_Script: {fileID: 11500000, guid: 3b72b18e50dc483fad36c1ebe4cd5d54, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.ItemReceiver
-  receiverId: cart
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.ItemSlot
   displayName: Cart
-  promptFormat: Put {item} in {target}
-  acceptedItemIds: []
-  spots: []
+  prompt: Put in cart:
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  slotId: cart
+  acceptsItemId: 
+  points: []
   consumeItems: 1
-  onItemReceived:
+  consumeCapacity: 0
+  lockPlacedItems: 1
+  onItemPlaced:
     m_PersistentCalls:
       m_Calls: []
   onFull:
