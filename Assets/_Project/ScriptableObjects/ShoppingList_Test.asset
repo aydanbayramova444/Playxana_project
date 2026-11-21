@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4edf46ea0c39d48d1b4aa74965dffa5c, type: 3}
+  m_Name: ShoppingList_Test
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.ShoppingListData
+  entries:
+  - item: {fileID: 11400000, guid: 64fd2861bcb904ed68ba8efb7058f55e, type: 2}
+    amount: 2
+  - item: {fileID: 11400000, guid: 094ed82df4a0344108512f051e1c67af, type: 2}
+    amount: 1
+  - item: {fileID: 11400000, guid: 1c24ab4830e9b4b2b8dbe60094ca42b3, type: 2}
+    amount: 1
+  - item: {fileID: 11400000, guid: 242b1bb714efd48faa6108f5bf737a08, type: 2}
+    amount: 1
