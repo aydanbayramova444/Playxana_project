@@ -8,12 +8,12 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_SkyApocalypse
-  m_Shader: {fileID: 106, guid: 0000000000000000f000000000000000, type: 0}
+  m_Shader: {fileID: 4800000, guid: 4173edba6bd59de478a766eed9552722, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
+  m_ValidKeywords: []
+  m_InvalidKeywords:
   - _SUNDISK_HIGH_QUALITY
-  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -27,12 +27,17 @@ Material:
     m_Ints: []
     m_Floats:
     - _AtmosphereThickness: 2.4
+    - _Exponent: 0.7
     - _Exposure: 0.85
     - _SunDisk: 2
-    - _SunSize: 0.06
+    - _SunSize: 0.025
     - _SunSizeConvergence: 5
     m_Colors:
+    - _BottomColor: {r: 0.4, g: 0.27, b: 0.2, a: 1}
     - _GroundColor: {r: 0.18, g: 0.15, b: 0.13, a: 1}
+    - _HorizonColor: {r: 0.98, g: 0.55, b: 0.28, a: 1}
     - _SkyTint: {r: 1, g: 0.42, b: 0.22, a: 1}
+    - _SunColor: {r: 1, g: 0.9, b: 0.6, a: 1}
+    - _TopColor: {r: 0.36, g: 0.14, b: 0.1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
