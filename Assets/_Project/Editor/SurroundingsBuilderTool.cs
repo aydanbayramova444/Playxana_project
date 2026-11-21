@@ -24,7 +24,7 @@ namespace Game.EditorTools
         const string MeshFolder  = "Assets/_Project/Art/Models/Environment";
         const string MainScene   = "Assets/_Project/Scenes/Main.unity";
 
-        static readonly Dictionary<string, Material> Mats = new Dictionary<string, Material>();
+        internal static readonly Dictionary<string, Material> Mats = new Dictionary<string, Material>();
 
         [MenuItem("Tools/Store/Build Surroundings (street, buildings, cars)", priority = 71)]
         public static void BuildMenu()
@@ -136,7 +136,7 @@ namespace Game.EditorTools
                 NoCollider(Box(p, "Window", new Vector3(x, y, -1.03f), new Vector3(1.3f, 1.3f, 0.06f), M("CarWindow", 1f)));
         }
 
-        static void Building(Transform p, string name, Vector3 floorCenter, Vector3 size, Material walls, Material roof)
+        internal static void Building(Transform p, string name, Vector3 floorCenter, Vector3 size, Material walls, Material roof)
         {
             Box(p, name, floorCenter + Vector3.up * size.y / 2f, size, walls);
             Box(p, name + "_Roof", floorCenter + Vector3.up * (size.y + 0.15f),
@@ -175,7 +175,7 @@ namespace Game.EditorTools
             Car(p, new Vector3(25f, 0f, -10f), 270f, "CarRed");
         }
 
-        static void Car(Transform p, Vector3 pos, float yaw, string paint)
+        internal static Transform Car(Transform p, Vector3 pos, float yaw, string paint)
         {
             var car = new GameObject("Car").transform;
             car.SetParent(p, false);
@@ -198,6 +198,7 @@ namespace Game.EditorTools
                 w.GetComponent<Renderer>().sharedMaterial = rubber;
                 w.isStatic = true;
             }
+            return car;
         }
 
         static void BuildStreetProps(Transform p)
@@ -352,7 +353,7 @@ namespace Game.EditorTools
         // ------------------------------------------------------------------ low-poly pine mesh
 
         /// <summary>Hexagonal trunk + 3 hexagonal cones, flat shaded (PS1 style). 4 m tall, 2 submeshes.</summary>
-        static Mesh PineMesh()
+        internal static Mesh PineMesh()
         {
             string path = $"{MeshFolder}/Pine_LowPoly.asset";
             var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
@@ -403,7 +404,7 @@ namespace Game.EditorTools
 
         // ------------------------------------------------------------------ helpers
 
-        static Material M(string texture, float tilesPerMetre, float ambient = 1f)
+        internal static Material M(string texture, float tilesPerMetre, float ambient = 1f)
         {
             string key = $"{texture}_{tilesPerMetre}";
             if (Mats.TryGetValue(key, out var cached)) return cached;
@@ -432,14 +433,14 @@ namespace Game.EditorTools
             return mat;
         }
 
-        static Transform Group(Transform parent, string name)
+        internal static Transform Group(Transform parent, string name)
         {
             var t = new GameObject(name).transform;
             t.SetParent(parent, false);
             return t;
         }
 
-        static GameObject Box(Transform parent, string name, Vector3 pos, Vector3 size, Material mat)
+        internal static GameObject Box(Transform parent, string name, Vector3 pos, Vector3 size, Material mat)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = name;
@@ -451,7 +452,7 @@ namespace Game.EditorTools
             return go;
         }
 
-        static GameObject Local(Transform parent, string name, Vector3 localPos, Vector3 size, Material mat)
+        internal static GameObject Local(Transform parent, string name, Vector3 localPos, Vector3 size, Material mat)
         {
             var go = Box(parent, name, Vector3.zero, size, mat);
             go.transform.localPosition = localPos;
@@ -459,13 +460,13 @@ namespace Game.EditorTools
             return go;
         }
 
-        static GameObject NoCollider(GameObject go)
+        internal static GameObject NoCollider(GameObject go)
         {
             Object.DestroyImmediate(go.GetComponent<Collider>());
             return go;
         }
 
-        static void SetUpTextures()
+        internal static void SetUpTextures()
         {
             foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { TexFolder }))
             {
@@ -480,7 +481,7 @@ namespace Game.EditorTools
             }
         }
 
-        static void EnsureFolder(string path)
+        internal static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;
             string parent = Path.GetDirectoryName(path)?.Replace('\\', '/');

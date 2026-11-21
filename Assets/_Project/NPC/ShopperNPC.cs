@@ -1,9 +1,19 @@
 using Game.Core;
+using Game.Gameplay;
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// NPC shopper (by Farid). Walks to a product, then either takes it or knocks it over and runs around (chaos).
+/// Targets:
+///   - GroceryItem objects lying around (Farid's test items), and
+///   - store Shelves with stock left: the NPC takes a REAL product off the shelf (the shelf stock goes down).
+///     Chaos on a shelf = the product is knocked onto the floor, where the player can still grab it.
+/// When nothing is left it walks to exitPoint and disappears.
+/// Needs a NavMeshAgent and a baked NavMesh (Tools → Store → Add Shopper Bots + NavMesh).
+/// </summary>
 public class ShopperNPC : MonoBehaviour
 {
     public Transform exitPoint;
@@ -16,11 +26,16 @@ public class ShopperNPC : MonoBehaviour
     public float runTime = 3f;
     [Range(0f, 1f)] public float chaosChance = 0.5f;
 
+    [Tooltip("How many products this NPC wants before leaving (shelves only). 0 = until everything is gone.")]
+    public int wantsItems = 3;
+
     NavMeshAgent agent;
     GroceryItem target;
+    Shelf targetShelf;
     bool busy;
     bool leaving;
     bool ready;
+    int itemsTaken;
 
     bool GameRunning()
     {
@@ -31,11 +46,17 @@ public class ShopperNPC : MonoBehaviour
     IEnumerator Start()
     {
         yield return new WaitUntil(GameRunning);
+        yield return null; // let shelves build and fill themselves first
 
         agent = GetComponent<NavMeshAgent>();
         if (agent == null)
         {
             Debug.LogError("ShopperNPC: NavMeshAgent yoxdur!", this);
+            yield break;
+        }
+        if (!agent.isOnNavMesh)
+        {
+            Debug.LogError("ShopperNPC: not on a NavMesh — bake one (Tools → Store → Add Shopper Bots + NavMesh).", this);
             yield break;
         }
         agent.speed = walkSpeed;
@@ -63,6 +84,15 @@ public class ShopperNPC : MonoBehaviour
             return;
         }
 
+        if (targetShelf != null)
+        {
+            if (targetShelf.IsEmpty) { ChooseItem(); return; } // someone (the player!) was faster
+
+            if (Flat(transform.position - targetShelf.FrontPoint) < grabDistance)
+                StartCoroutine(InteractRoutine());
+            return;
+        }
+
         if (target == null || target.taken)
         {
             ChooseItem();
@@ -74,21 +104,48 @@ public class ShopperNPC : MonoBehaviour
             StartCoroutine(InteractRoutine());
     }
 
+    static float Flat(Vector3 v) => new Vector2(v.x, v.z).magnitude;
+
     IEnumerator InteractRoutine()
     {
         busy = true;
         agent.isStopped = true;
 
-        Vector3 look = target.transform.position - transform.position;
+        Vector3 lookAt = targetShelf != null ? targetShelf.transform.position : target.transform.position;
+        Vector3 look = lookAt - transform.position;
         look.y = 0;
         if (look != Vector3.zero)
             transform.rotation = Quaternion.LookRotation(look);
 
         yield return new WaitForSeconds(grabDelay);
 
-        if (target != null && !target.taken)
+        bool chaos = Random.value < chaosChance;
+
+        if (targetShelf != null)
         {
-            if (Random.value < chaosChance)
+            // Take a real product off the store shelf
+            Game.Interaction.Pickup product = targetShelf.TakeOneItem();
+            if (product != null)
+            {
+                itemsTaken++;
+                if (chaos)
+                {
+                    // XAOS: mehsulu yere at, sonra qac
+                    Vector3 dir = (transform.forward + Random.insideUnitSphere * 0.5f).normalized;
+                    product.KnockByNpc(dir * 3f + Vector3.up * 2f);
+                    yield return new WaitForSeconds(0.5f);
+                    yield return StartCoroutine(RunAround());
+                }
+                else
+                {
+                    if (hand.childCount > 0) Destroy(hand.GetChild(0).gameObject); // one item in hand at a time
+                    product.TakeByNpc(hand);
+                }
+            }
+        }
+        else if (target != null && !target.taken)
+        {
+            if (chaos)
             {
                 // XAOS: erzagi yere at, sonra qac
                 Vector3 dir = (transform.forward + Random.insideUnitSphere * 0.5f).normalized;
@@ -135,22 +192,43 @@ public class ShopperNPC : MonoBehaviour
 
     void ChooseItem()
     {
+        agent.isStopped = false;
+        target = null;
+        targetShelf = null;
+
+        bool wantsMore = wantsItems <= 0 || itemsTaken < wantsItems;
+
+        // Store shelves with something left
+        var shelves = new List<Shelf>();
+        if (wantsMore)
+            foreach (Shelf s in FindObjectsByType<Shelf>(FindObjectsSortMode.None))
+                if (!s.IsEmpty) shelves.Add(s);
+
+        // Farid's loose grocery items
         GroceryItem[] items = FindObjectsByType<GroceryItem>(FindObjectsSortMode.None);
         List<GroceryItem> free = new List<GroceryItem>();
-
         foreach (GroceryItem item in items)
             if (!item.taken) free.Add(item);
 
-        agent.isStopped = false;
-
-        if (free.Count > 0)
+        int total = shelves.Count + free.Count;
+        if (total > 0)
         {
-            target = free[Random.Range(0, free.Count)];
-            agent.SetDestination(target.transform.position);
+            int pick = Random.Range(0, total);
+            if (pick < shelves.Count)
+            {
+                targetShelf = shelves[pick];
+                Vector3 stand = targetShelf.FrontPoint;
+                if (NavMesh.SamplePosition(stand, out NavMeshHit hit, 2f, NavMesh.AllAreas)) stand = hit.position;
+                agent.SetDestination(stand);
+            }
+            else
+            {
+                target = free[pick - shelves.Count];
+                agent.SetDestination(target.transform.position);
+            }
         }
         else
         {
-            target = null;
             leaving = true;
             if (exitPoint != null) agent.SetDestination(exitPoint.position);
             else Destroy(gameObject);

@@ -85,14 +85,11 @@ namespace Game.Interaction
 
         public override string GetBlockedReason(PlayerInteractor player)
         {
+            // Empty hands: say nothing (looking at a shelf shouldn't nag "shelf is full").
+            if (!player.IsHoldingAnything) return "";
+
+            if (!Accepts(player.HeldItem)) return $"Only {acceptsItemId} goes in {DisplayName}";
             if (IsFull) return $"{DisplayName} is full";
-
-            if (player.IsHoldingAnything && !Accepts(player.HeldItem))
-                return $"Only {acceptsItemId} goes in {DisplayName}";
-
-            if (!player.IsHoldingAnything && !string.IsNullOrEmpty(acceptsItemId))
-                return $"{DisplayName}: needs {acceptsItemId}{CountSuffix()}";
-
             return "";
         }
 

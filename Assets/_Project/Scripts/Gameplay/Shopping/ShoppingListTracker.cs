@@ -101,6 +101,34 @@ namespace Game.Gameplay
                 if (e == null || e.item == null) continue; // skip empty rows in the asset
                 _entries.Add(new Progress(e.item, Mathf.Max(1, e.amount)));
             }
+
+            AddRandomItems();
+        }
+
+        /// <summary>Adds `randomCount` different items from the pool (new picks every game).</summary>
+        private void AddRandomItems()
+        {
+            if (shoppingList.randomCount <= 0 || shoppingList.randomPool == null) return;
+
+            // Candidates: pool items that are set and not already on the list
+            var candidates = new List<ItemData>();
+            foreach (ItemData item in shoppingList.randomPool)
+            {
+                if (item == null || candidates.Contains(item)) continue;
+                if (_entries.Exists(p => p.Item == item)) continue;
+                candidates.Add(item);
+            }
+
+            int min = Mathf.Max(1, shoppingList.randomMinAmount);
+            int max = Mathf.Max(min, shoppingList.randomMaxAmount);
+            int count = Mathf.Min(shoppingList.randomCount, candidates.Count);
+
+            for (int i = 0; i < count; i++)
+            {
+                int pick = Random.Range(0, candidates.Count);
+                _entries.Add(new Progress(candidates[pick], Random.Range(min, max + 1)));
+                candidates.RemoveAt(pick);
+            }
         }
 
         private void OnItemPlaced(GameObject item, string itemId, GameObject receiver)
