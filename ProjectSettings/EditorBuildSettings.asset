@@ -20,5 +20,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Level2.unity
     guid: 6a83e87fde92aba43a56c0f93a1ac8ae
+  - enabled: 1
+    path: Assets/_Project/Scenes/Shelter.unity
+    guid: 00373ff9449814fd58192350e048817c
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

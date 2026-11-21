@@ -11,7 +11,8 @@ namespace Game.Level2
     ///   - Chaotic cars (<see cref="ChaosCar"/>): every hit knocks you back; 4 hits = run over = game over.
     ///   - Safe zones (<see cref="SafeZone"/>) on the sidewalk: no hits inside, and health refills.
     ///   - Reach the shelter entrance (<see cref="ShelterGoal"/>) = you survive.
-    /// Draws its own simple HUD (timer, hits, messages) and end screens: R = try again, M = main menu.
+    /// Draws its own simple HUD (timer, hits, messages) and end screens: R = try again, M = main menu,
+    /// and after surviving: Enter / Space = go inside (Level 3, <see cref="nextScene"/>).
     /// </summary>
     public class Level2Manager : MonoBehaviour
     {
@@ -24,6 +25,8 @@ namespace Game.Level2
         [Tooltip("Inside a safe zone: one hit is healed every this many seconds.")]
         [SerializeField] private float healEvery = 2f;
         [SerializeField] private string menuScene = "MainMenu";
+        [Tooltip("Level 3, loaded with Enter / Space after you reach the shelter.")]
+        [SerializeField] private string nextScene = "Shelter";
 
         public float TimeLeft { get; private set; }
         public int Hits { get; private set; }
@@ -120,6 +123,19 @@ namespace Game.Level2
             if (_end == End.None) Finish(End.Survived);
         }
 
+        /// <summary>After surviving: go inside the shelter (Level 3). Enter / Space on the end screen.</summary>
+        public void EnterShelter()
+        {
+            if (_end != End.Survived) return;
+            if (!Application.CanStreamedLevelBeLoaded(nextScene))
+            {
+                Debug.LogError($"[Level2] Scene '{nextScene}' is not in Build Profiles.", this);
+                return;
+            }
+            GameManager.Instance?.StartGame();
+            SceneLoader.Load(nextScene);
+        }
+
         private void Finish(End end)
         {
             _end = end;
@@ -135,7 +151,11 @@ namespace Game.Level2
             var kb = Keyboard.current;
             if (kb == null) return;
 
-            if (kb.rKey.wasPressedThisFrame)
+            if (kb.enterKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame)
+            {
+                EnterShelter();
+            }
+            else if (kb.rKey.wasPressedThisFrame)
             {
                 GameManager.Instance?.StartGame();
                 SceneLoader.ReloadCurrent();
@@ -207,7 +227,14 @@ namespace Game.Level2
             if (Time.unscaledTime - _endTime > 1f)
             {
                 _small.alignment = TextAnchor.MiddleCenter;
-                Shadowed(new Rect(0, h * 0.58f, w, h * 0.05f), "R — try again      M — main menu", _small);
+                if (_end == End.Survived)
+                {
+                    _mid.normal.textColor = new Color(0.5f, 1f, 0.5f);
+                    Shadowed(new Rect(0, h * 0.56f, w, h * 0.06f), "ENTER — enter the shelter", _mid);
+                    _mid.normal.textColor = Color.white;
+                }
+                Shadowed(new Rect(0, h * (_end == End.Survived ? 0.64f : 0.58f), w, h * 0.05f),
+                    "R — try again      M — main menu", _small);
             }
         }
 
