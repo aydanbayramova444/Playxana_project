@@ -36,17 +36,17 @@ namespace Game.EditorTools
         const float ItemSize = 1.5f;
 
         // id (= Pickup.ItemId = ItemData.id), name in the game, how many a shelf starts with,
-        // and whether it goes on the test shopping list
+        // and whether it is ALWAYS on the test shopping list (the rest come up at random)
         static readonly (string id, string name, int stock, bool onList)[] Products =
         {
-            ("toilet_paper",  "Toilet Paper",    4, true),
-            ("buckwheat",     "Buckwheat",       6, true),
-            ("canned_meat",   "Canned Meat",     8, true),
+            ("toilet_paper",  "Toilet Paper",    4, false),
+            ("buckwheat",     "Buckwheat",       6, false),
+            ("canned_meat",   "Canned Meat",     8, false),
             ("water_jug",     "Water 5L",        3, true),
             ("batteries",     "Batteries",       6, false),
             ("candles",       "Candles",         6, false),
             ("noodles",       "Instant Noodles", 8, false),
-            ("first_aid",     "First Aid Kit",   2, false),
+            ("first_aid",     "First Aid Kit",   2, true),
             ("matches",       "Matches",        12, false),
         };
 
