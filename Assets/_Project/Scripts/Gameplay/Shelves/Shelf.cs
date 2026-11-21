@@ -142,6 +142,8 @@ namespace Game.Gameplay
         {
             var temp = GameObject.CreatePrimitive(PrimitiveType.Cube);
             var mat = new Material(temp.GetComponent<Renderer>().sharedMaterial) { color = color };
+            Shader ps1 = Shader.Find("Game/PS1 Lit"); // same wobbly PS1 look as the rest of the store
+            if (ps1 != null) mat.shader = ps1;
             if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
             Destroy(temp);
             return mat;
