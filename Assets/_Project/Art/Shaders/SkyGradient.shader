@@ -23,8 +23,7 @@ Shader "Game/Sky Gradient"
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RealtimeLights.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl" // has _MainLightPosition
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _TopColor;

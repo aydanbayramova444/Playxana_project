@@ -278,41 +278,75 @@ namespace Game.EditorTools
             Wall("Bound_East", new Vector3(38, 3, -1), new Vector3(0.5f, 6, 32));
         }
 
-        /// <summary>Orange end-of-the-world sky, low warm sun, warm haze.</summary>
-        static void SetUpSkyAndLight()
+        /// <summary>
+        /// Orange end-of-the-world sky, low warm sun, warm haze.
+        /// Colours are picked to survive the 4-level PixelDither (dark sunset tones turn teal there),
+        /// and the ambient light is set directly (Trilight) instead of being taken from the sky.
+        /// </summary>
+        public static void SetUpSkyAndLight()
         {
             string skyPath = $"{MatFolder}/M_SkyApocalypse.mat";
             var sky = AssetDatabase.LoadAssetAtPath<Material>(skyPath);
+            Shader gradient = Shader.Find("Game/Sky Gradient");
             if (sky == null)
             {
-                sky = new Material(Shader.Find("Skybox/Procedural"));
+                sky = new Material(gradient);
                 AssetDatabase.CreateAsset(sky, skyPath);
             }
-            sky.SetColor("_SkyTint", new Color(1f, 0.42f, 0.22f));
-            sky.SetColor("_GroundColor", new Color(0.18f, 0.15f, 0.13f));
-            sky.SetFloat("_AtmosphereThickness", 2.4f);
-            sky.SetFloat("_Exposure", 0.85f);
-            sky.SetFloat("_SunSize", 0.06f);
+            if (gradient != null) sky.shader = gradient;
+            sky.SetColor("_TopColor", new Color(0.36f, 0.14f, 0.1f));
+            sky.SetColor("_HorizonColor", new Color(0.98f, 0.55f, 0.28f));
+            sky.SetColor("_BottomColor", new Color(0.4f, 0.27f, 0.2f));
+            sky.SetFloat("_Exponent", 0.7f);
+            sky.SetColor("_SunColor", new Color(1f, 0.9f, 0.6f));
+            sky.SetFloat("_SunSize", 0.025f);
             EditorUtility.SetDirty(sky);
             RenderSettings.skybox = sky;
 
+            // Ambient light: warm sky, neutral sides, dark ground (not computed from the sky)
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.62f, 0.48f, 0.42f);
+            RenderSettings.ambientEquatorColor = new Color(0.5f, 0.42f, 0.38f);
+            RenderSettings.ambientGroundColor = new Color(0.24f, 0.21f, 0.19f);
+
+            // Haze in the distance, same colour as the horizon so buildings fade into the sky
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogColor = new Color(0.42f, 0.27f, 0.2f);
-            RenderSettings.fogStartDistance = 12f;
-            RenderSettings.fogEndDistance = 75f;
+            RenderSettings.fogColor = new Color(0.85f, 0.5f, 0.3f);
+            RenderSettings.fogStartDistance = 20f;
+            RenderSettings.fogEndDistance = 90f;
 
             foreach (var l in Object.FindObjectsByType<Light>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
             {
                 if (l.type != LightType.Directional) continue;
                 Undo.RecordObject(l, "Sun");
                 Undo.RecordObject(l.transform, "Sun");
-                l.color = new Color(1f, 0.6f, 0.38f);
-                l.intensity = 1.1f;
-                l.transform.rotation = Quaternion.Euler(16f, -35f, 0f); // low sun from behind the store
+                l.color = new Color(1f, 0.78f, 0.58f);   // warm, but not red
+                l.intensity = 1.3f;
+                l.transform.rotation = Quaternion.Euler(22f, -35f, 0f); // low sun from behind the store
                 break;
             }
-            DynamicGI.UpdateEnvironment();
+        }
+
+        /// <summary>Tools → Store → Fix Sky And Light: only redoes the sky / ambient / fog / sun.</summary>
+        [MenuItem("Tools/Store/Fix Sky And Light (open scene)", priority = 72)]
+        public static void FixSkyMenu()
+        {
+            EnsureFolder(MatFolder);
+            SetUpSkyAndLight();
+            var scene = EditorSceneManager.GetActiveScene();
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log("[Surroundings] Sky, ambient light, fog and sun updated.");
+        }
+
+        /// <summary>Command line: -executeMethod ...SurroundingsBuilderTool.FixSkyFromCommandLine -envScene path</summary>
+        public static void FixSkyFromCommandLine()
+        {
+            string[] args = System.Environment.GetCommandLineArgs();
+            int i = System.Array.IndexOf(args, "-envScene");
+            if (i >= 0 && i + 1 < args.Length) EditorSceneManager.OpenScene(args[i + 1]);
+            FixSkyMenu();
         }
 
         // ------------------------------------------------------------------ low-poly pine mesh

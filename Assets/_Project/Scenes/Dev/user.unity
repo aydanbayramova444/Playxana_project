@@ -698,7 +698,7 @@ Transform:
   m_GameObject: {fileID: 85139996}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 28, y: 0.003, z: -8}
+  m_LocalPosition: {x: 28, y: 0.023, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1233,7 +1233,7 @@ Transform:
   m_GameObject: {fileID: 176894212}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3, y: 0.003, z: -8}
+  m_LocalPosition: {x: 3, y: 0.035, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1818,7 +1818,7 @@ Transform:
   m_GameObject: {fileID: 217174442}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -37, y: 0.003, z: -8}
+  m_LocalPosition: {x: -37, y: 0.021, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1891,6 +1891,7 @@ GameObject:
   m_Component:
   - component: {fileID: 230137889}
   - component: {fileID: 230137890}
+  - component: {fileID: 230137891}
   m_Layer: 0
   m_Name: StreetLight
   m_TagString: Untagged
@@ -1978,6 +1979,35 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &230137891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 230137888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &236127096
 GameObject:
   m_ObjectHideFlags: 0
@@ -2315,6 +2345,7 @@ GameObject:
   m_Component:
   - component: {fileID: 281996796}
   - component: {fileID: 281996797}
+  - component: {fileID: 281996798}
   m_Layer: 0
   m_Name: StreetLight
   m_TagString: Untagged
@@ -2402,6 +2433,35 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &281996798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 281996795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &312641250
 GameObject:
   m_ObjectHideFlags: 0
@@ -2412,6 +2472,7 @@ GameObject:
   m_Component:
   - component: {fileID: 312641251}
   - component: {fileID: 312641252}
+  - component: {fileID: 312641253}
   m_Layer: 0
   m_Name: StreetLight
   m_TagString: Untagged
@@ -2499,6 +2560,35 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &312641253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 312641250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &315269781
 GameObject:
   m_ObjectHideFlags: 0
@@ -4162,7 +4252,7 @@ Transform:
   m_GameObject: {fileID: 443733248}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.003, z: -8}
+  m_LocalPosition: {x: 0, y: 0.07, z: -8}
   m_LocalScale: {x: 0.45, y: 0.01, z: 7.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5872,6 +5962,7 @@ GameObject:
   m_Component:
   - component: {fileID: 744875359}
   - component: {fileID: 744875360}
+  - component: {fileID: 744875361}
   m_Layer: 0
   m_Name: StreetLight
   m_TagString: Untagged
@@ -5959,6 +6050,35 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &744875361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 744875358}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &746482639
 GameObject:
   m_ObjectHideFlags: 0
@@ -6184,7 +6304,7 @@ Transform:
   m_GameObject: {fileID: 771024304}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -32, y: 0.003, z: -8}
+  m_LocalPosition: {x: -32, y: 0.017, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6424,7 +6544,7 @@ Transform:
   m_GameObject: {fileID: 777129017}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.8, y: 0.003, z: -8}
+  m_LocalPosition: {x: 0.8, y: 0.03, z: -8}
   m_LocalScale: {x: 0.45, y: 0.01, z: 7.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7351,7 +7471,7 @@ Transform:
   m_GameObject: {fileID: 846390922}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.12, z: -6}
+  m_LocalPosition: {x: 0, y: -0.69, z: -6}
   m_LocalScale: {x: 110, y: 0.2, z: 90}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8353,7 +8473,7 @@ Transform:
   m_GameObject: {fileID: 974723319}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12, y: 0.003, z: -8}
+  m_LocalPosition: {x: -12, y: 0.015, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8974,7 +9094,7 @@ Transform:
   m_GameObject: {fileID: 1041183850}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8, y: 0.003, z: -8}
+  m_LocalPosition: {x: -0.8, y: 0.069, z: -8}
   m_LocalScale: {x: 0.45, y: 0.01, z: 7.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9696,7 +9816,7 @@ Transform:
   m_GameObject: {fileID: 1123607117}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 33, y: 0.003, z: -8}
+  m_LocalPosition: {x: 33, y: 0.034, z: -8.004}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10096,7 +10216,7 @@ Transform:
   m_GameObject: {fileID: 1172582144}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -42, y: 0.003, z: -8}
+  m_LocalPosition: {x: -42, y: 0.041, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10929,7 +11049,7 @@ Transform:
   m_GameObject: {fileID: 1287672899}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.6, y: 0.003, z: -8}
+  m_LocalPosition: {x: 1.6, y: 0.05, z: -8}
   m_LocalScale: {x: 0.45, y: 0.01, z: 7.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11019,7 +11139,7 @@ Transform:
   m_GameObject: {fileID: 1307602420}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8, y: 0.003, z: -8}
+  m_LocalPosition: {x: 8, y: 0.02, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11311,7 +11431,7 @@ Transform:
   m_GameObject: {fileID: 1320088653}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 38, y: 0.003, z: -8}
+  m_LocalPosition: {x: 38.013, y: 0.099, z: -8.002}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11566,7 +11686,7 @@ Transform:
   m_GameObject: {fileID: 1366275591}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13, y: 0.003, z: -8}
+  m_LocalPosition: {x: 13, y: 0.038, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11768,7 +11888,7 @@ Transform:
   m_GameObject: {fileID: 1409342528}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 18, y: 0.003, z: -8}
+  m_LocalPosition: {x: 18, y: 0.008, z: -8.014}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -13579,7 +13699,7 @@ Transform:
   m_GameObject: {fileID: 1608028188}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -27, y: 0.003, z: -8}
+  m_LocalPosition: {x: -27, y: 0.025, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14746,7 +14866,7 @@ Transform:
   m_GameObject: {fileID: 1766395297}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -17, y: 0.003, z: -8}
+  m_LocalPosition: {x: -17, y: 0.028, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14836,7 +14956,7 @@ Transform:
   m_GameObject: {fileID: 1770261255}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -22, y: 0.003, z: -8}
+  m_LocalPosition: {x: -22, y: 0.051, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15333,7 +15453,7 @@ Transform:
   m_GameObject: {fileID: 1840599335}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 23, y: 0.003, z: -8}
+  m_LocalPosition: {x: 23, y: 0.025, z: -8}
   m_LocalScale: {x: 2.2, y: 0.01, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15893,7 +16013,7 @@ Transform:
   m_GameObject: {fileID: 1889738148}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.6, y: 0.003, z: -8}
+  m_LocalPosition: {x: -1.6, y: 0.08, z: -8}
   m_LocalScale: {x: 0.45, y: 0.01, z: 7.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
