@@ -43,6 +43,26 @@ namespace Game.Gameplay
         public string HeldItemId => _held != null ? _held.ItemId : "";
         public bool IsHolding => _held != null;
 
+        // Every scene with a player (Main, Dev scenes ...) gets interaction automatically,
+        // without changing the shared Player prefab or the scenes.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void AutoAddToPlayer()
+        {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+            AddToPlayers();
+        }
+
+        private static void OnSceneLoaded(UnityEngine.SceneManagement.Scene s,
+            UnityEngine.SceneManagement.LoadSceneMode m) => AddToPlayers();
+
+        private static void AddToPlayers()
+        {
+            foreach (var p in FindObjectsByType<Game.Player.PlayerController>(FindObjectsInactive.Exclude))
+                if (p.GetComponent<PlayerInteractor>() == null)
+                    p.gameObject.AddComponent<PlayerInteractor>();
+        }
+
         private void Awake()
         {
             if (cam == null) cam = GetComponentInChildren<Camera>();

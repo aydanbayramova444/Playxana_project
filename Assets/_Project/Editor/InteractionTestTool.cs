@@ -24,7 +24,7 @@ namespace Game.EditorTools
         const string MatFolder = "Assets/_Project/Art/Materials/Blockout";
 
         [MenuItem("Tools/Level/Add Interaction Test Objects", priority = 11)]
-        static void AddTestObjects()
+        internal static void AddTestObjects()
         {
             var player = Object.FindAnyObjectByType<PlayerController>();
             if (player == null)

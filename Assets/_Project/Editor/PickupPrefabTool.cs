@@ -57,7 +57,31 @@ namespace Game.EditorTools
         // ---------- Build prefabs ----------
 
         [MenuItem("Tools/Level/Make Store Pickup Prefabs", priority = 20)]
-        public static void MakePrefabs()
+        static void MakePrefabsMenu() => MakePrefabs(showDialog: true);
+
+        /// <summary>One click: pickup prefabs + test objects + food table in the OPEN scene.</summary>
+        [MenuItem("Tools/Level/Add Interaction Demo (all in one)", priority = 0)]
+        static void AddEverything()
+        {
+            if (Object.FindAnyObjectByType<PlayerController>() == null)
+            {
+                EditorUtility.DisplayDialog("Interaction Demo",
+                    "No player in this scene. Open a scene with the Player (e.g. Main).", "OK");
+                return;
+            }
+
+            MakePrefabs(showDialog: false);
+            InteractionTestTool.AddTestObjects();
+            AddShowcase();
+
+            EditorUtility.DisplayDialog("Interaction Demo",
+                "Added to this scene:\n" +
+                "- InteractionTest (shelf, basket, bin, register, mop, spill, door lock)\n" +
+                "- PickupShowcase (table with 25 foods)\n\n" +
+                "Press Play and press E on things. Save with Ctrl+S.", "OK");
+        }
+
+        public static void MakePrefabs(bool showDialog)
         {
             EnsureFolder(OutFolder);
             int made = 0;
@@ -115,7 +139,7 @@ namespace Game.EditorTools
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[Pickups] Made {made} pickup prefabs in {OutFolder}");
-            EditorUtility.DisplayDialog("Pickup Prefabs",
+            if (showDialog) EditorUtility.DisplayDialog("Pickup Prefabs",
                 $"Made {made} pickup prefabs in\n{OutFolder}\n\nDrag them into any scene, " +
                 "or use Tools → Level → Add Pickup Showcase.", "OK");
         }
@@ -133,7 +157,7 @@ namespace Game.EditorTools
             }
 
             if (AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath(Items[0].id)) == null)
-                MakePrefabs();
+                MakePrefabs(showDialog: false);
 
             var player = Object.FindAnyObjectByType<PlayerController>();
             if (player.GetComponent<PlayerInteractor>() == null)
