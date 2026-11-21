@@ -40,13 +40,16 @@ namespace Game.Gameplay
         [Header("Look")]
         [SerializeField] private Color frameColor = new Color(0.82f, 0.84f, 0.86f); // light metal
         [SerializeField] private Color boardColor = new Color(0.62f, 0.45f, 0.28f); // wood
+        [Tooltip("Sign on the top front of the shelf: product name + stock")]
         [SerializeField] private bool showLabel = true;
+        [SerializeField] private Color signColor = new Color(0.10f, 0.10f, 0.11f);   // dark board
+        [SerializeField] private Color signStripe = new Color(0.70f, 0.07f, 0.07f);  // red 24/7 stripe
 
         const float Thick = 0.04f;    // panels and boards
         const float BaseHeight = 0.12f;
 
         private ItemSlot _slot;
-        private TextMeshPro _label;
+        private TextMeshPro _label, _count; // name (left) and stock (right) on the sign
 
         // ---------- Public API (for NPCs, UI ...) ----------
 
@@ -76,14 +79,6 @@ namespace Game.Gameplay
             _slot.ItemPlaced += (_, __) => OnStockChanged();
             _slot.ItemRemoved += (_, __) => OnStockChanged();
             UpdateLabel();
-        }
-
-        private void LateUpdate()
-        {
-            // Label always faces the camera.
-            Camera cam = Camera.main;
-            if (_label != null && cam != null)
-                _label.transform.rotation = Quaternion.LookRotation(_label.transform.position - cam.transform.position);
         }
 
         // ---------- Building the shelf ----------
@@ -213,17 +208,54 @@ namespace Game.Gameplay
 
         // ---------- Label ----------
 
+        const float SignHeight = 0.22f;
+
+        /// <summary>
+        /// A shop sign fixed to the top front edge of the shelf (like real supermarket shelf headers):
+        /// dark board + red stripe at the bottom, product name on the left, stock on the right.
+        /// It is part of the shelf — it does not float or turn to the camera, so signs never overlap.
+        /// </summary>
         private TextMeshPro CreateLabel()
         {
-            var go = new GameObject("StockLabel", typeof(TextMeshPro));
-            go.transform.SetParent(transform, false);
-            go.transform.localPosition = new Vector3(0, height + 0.3f, 0);
+            var sign = new GameObject("Sign").transform;
+            sign.SetParent(transform, false);
+            float halfD = depth / 2f;
+            float y = height + SignHeight / 2f; // stands on the top board
+            float frontZ = halfD + 0.01f;      // sticks out a little at the front
+
+            Part(sign, "Board", new Vector3(0, y, frontZ), new Vector3(width, SignHeight, 0.02f), MakeMaterial(signColor));
+            Part(sign, "Stripe", new Vector3(0, y - SignHeight / 2f + 0.02f, frontZ + 0.002f),
+                new Vector3(width, 0.04f, 0.02f), MakeMaterial(signStripe));
+
+            // Text sits just in front of the board. TextMeshPro is read looking along its +Z,
+            // so it is turned around to face the aisle (the shelf's front).
+            float textZ = frontZ + 0.012f;
+            float textY = y + 0.015f;           // a bit above centre, clear of the stripe
+            float inner = width - 0.12f;
+            _label = SignText(sign, "Name", new Vector3(0, textY, textZ), inner, TextAlignmentOptions.Left);
+            _count = SignText(sign, "Count", new Vector3(0, textY, textZ), inner, TextAlignmentOptions.Right);
+            return _label;
+        }
+
+        private static TextMeshPro SignText(Transform parent, string objName, Vector3 localPos, float width,
+            TextAlignmentOptions align)
+        {
+            var go = new GameObject(objName, typeof(TextMeshPro));
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = localPos;
+            go.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
 
             var text = go.GetComponent<TextMeshPro>();
             if (text.font == null) text.font = TMP_Settings.defaultFontAsset;
-            text.fontSize = 2.5f;
-            text.alignment = TextAlignmentOptions.Center;
+            text.rectTransform.sizeDelta = new Vector2(width, SignHeight * 0.6f);
+            text.enableAutoSizing = true;   // long names shrink to fit
+            text.fontSizeMin = 0.4f;
+            text.fontSizeMax = 1.1f;
+            text.fontStyle = FontStyles.Bold | FontStyles.UpperCase;
+            text.characterSpacing = 4f;
+            text.alignment = align | TextAlignmentOptions.Midline;
             text.textWrappingMode = TextWrappingModes.NoWrap;
+            text.color = new Color(0.93f, 0.91f, 0.86f);
             return text;
         }
 
@@ -232,11 +264,15 @@ namespace Game.Gameplay
             if (_label == null) return;
             if (item == null)
             {
-                _label.text = $"Shelf {Stock}/{Capacity}";
+                _label.text = "Empty shelf";
+                _count.text = $"{Stock}/{Capacity}";
                 return;
             }
-            _label.text = IsEmpty ? $"{item.displayName}\n<color=#FF5555>SOLD OUT</color>"
-                                  : $"{item.displayName} x{Stock}";
+
+            // Leave room for the count on the right.
+            _label.text = item.displayName;
+            _label.margin = new Vector4(0, 0, IsEmpty ? 0.55f : 0.25f, 0);
+            _count.text = IsEmpty ? "<color=#FF4444>SOLD OUT</color>" : $"<color=#FFC94A>x{Stock}</color>";
         }
 
         // ---------- Editor preview ----------
