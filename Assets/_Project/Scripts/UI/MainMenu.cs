@@ -37,6 +37,13 @@ namespace Game.UI
         [Tooltip("Scene loaded by the Play button (must be in Build Profiles)")]
         [SerializeField] private string gameScene = "Main";
 
+        [Header("3D showcase (right side)")]
+        [Tooltip("Products that float in a slowly turning circle. Empty = no showcase.")]
+        [SerializeField] private GameObject[] showcaseItems;
+        [Tooltip("Biggest side of each product, in metres")]
+        [SerializeField] private float showcaseItemSize = 0.9f;
+        [SerializeField] private float showcaseRadius = 1.7f;
+
         [Header("Colors")]
         [SerializeField] private Color topColor = new Color(0.09f, 0.33f, 0.38f);
         [SerializeField] private Color bottomColor = new Color(0.04f, 0.06f, 0.13f);
@@ -44,8 +51,10 @@ namespace Game.UI
 
         private Sprite _round, _circle;
         private CanvasGroup _mainGroup, _helpGroup;
-        private RectTransform _title, _card;
-        private Vector2 _titlePos, _cardPos;
+        private RectTransform _title;
+        private Vector2 _titlePos;
+        private Transform _carousel;
+        private readonly List<Transform> _spinners = new List<Transform>();
         private GameObject _playButton, _helpBack;
         private InputAction _cancel;
         private bool _leaving;
@@ -78,9 +87,22 @@ namespace Game.UI
             float t = Time.unscaledTime;
             float dt = Time.unscaledDeltaTime;
 
-            // Gentle floating title and card.
+            // Gentle floating title.
             if (_title != null) _title.anchoredPosition = _titlePos + new Vector2(0, Mathf.Sin(t * 1.3f) * 6f);
-            if (_card != null) _card.anchoredPosition = _cardPos + new Vector2(0, Mathf.Sin(t * 0.9f + 1f) * 10f);
+
+            // 3D showcase: the ring turns slowly, every product spins and bobs on its own.
+            if (_carousel != null)
+            {
+                _carousel.Rotate(0f, 18f * dt, 0f, Space.Self);
+                for (int i = 0; i < _spinners.Count; i++)
+                {
+                    Transform s = _spinners[i];
+                    s.Rotate(0f, 55f * dt, 0f, Space.Self);
+                    Vector3 p = s.localPosition;
+                    p.y = Mathf.Sin(t * 1.6f + i * 1.1f) * 0.12f;
+                    s.localPosition = p;
+                }
+            }
 
             // Bubbles drift up and wrap around.
             for (int i = 0; i < _bubbles.Count; i++)
@@ -143,7 +165,12 @@ namespace Game.UI
         {
             var canvasGo = new GameObject("MenuCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvasGo.transform.SetParent(transform, false);
-            canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+            // Screen Space - Camera, far from the camera: 3D products closer than the UI plane
+            // are drawn IN FRONT of the background but the UI stays sharp.
+            var canvas = canvasGo.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = Camera.main;
+            canvas.planeDistance = 20f;
             var scaler = canvasGo.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
@@ -176,6 +203,16 @@ namespace Game.UI
                     Rt = rt, X = Random.Range(0f, 1920f), Speed = Random.Range(12f, 38f),
                     Sway = Random.Range(10f, 40f), Phase = Random.Range(0f, 6.28f)
                 });
+            }
+
+            // Soft glow on the right, behind the 3D products
+            if (showcaseItems != null && showcaseItems.Length > 0)
+            {
+                var glow = Rect("Glow", root);
+                Place(glow, new Vector2(1, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-520, 0), new Vector2(900, 900));
+                var glowImg = glow.gameObject.AddComponent<RawImage>();
+                glowImg.texture = MakeRadialGlow(new Color(accent.r, accent.g, accent.b, 0.30f));
+                glowImg.raycastTarget = false;
             }
 
             // ----- Main group (everything that fades in/out together) -----
@@ -217,7 +254,7 @@ namespace Game.UI
             MakeButton(content, "HOW TO PLAY", -600, primary: false, () => ShowHelp(true));
             MakeButton(content, "QUIT", -710, primary: false, OnQuit);
 
-            BuildCard(main);
+            BuildShowcase();
 
             var foot = Text(main, "Footer", footer, 22, new Color(1, 1, 1, 0.4f));
             foot.characterSpacing = 8;
@@ -230,50 +267,89 @@ namespace Game.UI
             BuildHelp(root);
         }
 
-        /// <summary>The tilted "shopping list" card on the right — shows what the game is about.</summary>
-        private void BuildCard(Transform parent)
+        /// <summary>
+        /// 3D products floating in a slowly turning ring on the right side of the screen.
+        /// Only the meshes are copied from the prefabs — no physics, no scripts, nothing to pick up.
+        /// </summary>
+        private void BuildShowcase()
         {
-            _card = Rect("ListCard", parent);
-            Place(_card, new Vector2(1, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-430, 10), new Vector2(560, 650));
-            _card.localRotation = Quaternion.Euler(0, 0, -6f);
-            _cardPos = _card.anchoredPosition;
+            Camera cam = Camera.main;
+            if (cam == null || showcaseItems == null || showcaseItems.Length == 0) return;
 
-            var cardShadow = Rect("Shadow", _card);
-            Stretch(cardShadow);
-            cardShadow.anchoredPosition = new Vector2(14, -18);
-            Panel(cardShadow, new Color(0, 0, 0, 0.3f));
+            // Light so the products are not black in an empty scene.
+            if (FindAnyObjectByType<Light>() == null)
+            {
+                var light = new GameObject("MenuLight", typeof(Light)).GetComponent<Light>();
+                light.type = LightType.Directional;
+                light.intensity = 1.3f;
+                light.transform.rotation = Quaternion.Euler(35f, -40f, 0f);
+            }
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = Color.Lerp(topColor, Color.white, 0.55f);
 
-            var face = Rect("Face", _card);
-            Stretch(face);
-            Panel(face, new Color(0.98f, 0.96f, 0.91f)); // paper
+            // Centre of the ring: right side of the screen, 7 m in front of the camera.
+            _carousel = new GameObject("Showcase").transform;
+            _carousel.position = cam.ViewportToWorldPoint(new Vector3(0.73f, 0.47f, 7f));
+            _carousel.rotation = cam.transform.rotation * Quaternion.Euler(-14f, 0f, 0f); // tilt: see the ring from a bit above
 
-            var header = Rect("Header", face);
-            header.anchorMin = new Vector2(0, 1);
-            header.anchorMax = new Vector2(1, 1);
-            header.pivot = new Vector2(0.5f, 1);
-            header.sizeDelta = new Vector2(0, 120);
-            header.anchoredPosition = Vector2.zero;
-            Panel(header, accent);
+            int count = showcaseItems.Length;
+            for (int i = 0; i < count; i++)
+            {
+                if (showcaseItems[i] == null) continue;
 
-            var title = Text(header, "Title", "SHOPPING LIST", 44, bottomColor, FontStyles.Bold, TextAlignmentOptions.Center);
-            title.characterSpacing = 12;
-            Stretch(title.rectTransform);
+                float angle = i * Mathf.PI * 2f / count;
+                var holder = new GameObject(showcaseItems[i].name).transform;
+                holder.SetParent(_carousel, false);
+                holder.localPosition = new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * showcaseRadius;
+                holder.localRotation = Quaternion.Euler(14f, 0f, 0f);             // undo the ring tilt: products stand upright
+                holder.Rotate(0f, Random.Range(0f, 360f), 0f, Space.Self);       // each starts facing a different way
 
-            string done = "#2E8B57", todo = "#2A2F3A", faded = "#9AA0A6";
-            string list =
-                $"<color={faded}><s>Banana</s></color><pos=78%><color={done}><b>2/2</b></color>\n" +
-                $"<color={faded}><s>Soda</s></color><pos=78%><color={done}><b>1/1</b></color>\n" +
-                $"<color={todo}>Apple</color><pos=78%><color={todo}><b>0/1</b></color>\n" +
-                $"<color={todo}>Bread</color><pos=78%><color={todo}><b>0/1</b></color>\n" +
-                $"<color={todo}>Chocolate</color><pos=78%><color={todo}><b>0/2</b></color>";
-            var items = Text(face, "Items", list, 40, Color.black);
-            items.lineSpacing = 38;
-            items.richText = true;
-            Place(items.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -160), new Vector2(460, 400));
+                Transform model = CopyMeshes(showcaseItems[i], holder);
+                FitToSize(model, showcaseItemSize);
+                _spinners.Add(holder);
+            }
+        }
 
-            var timer = Text(face, "Timer", "<b>01:24</b>  left", 34, new Color(0.85f, 0.25f, 0.25f), FontStyles.Normal,
-                TextAlignmentOptions.Center);
-            Place(timer.rectTransform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 40), new Vector2(460, 60));
+        /// <summary>Copies every MeshFilter + MeshRenderer of the prefab (keeping their layout) under `parent`.</summary>
+        private static Transform CopyMeshes(GameObject prefab, Transform parent)
+        {
+            var model = new GameObject("Model").transform;
+            model.SetParent(parent, false);
+            Matrix4x4 toRoot = prefab.transform.worldToLocalMatrix;
+
+            foreach (MeshFilter mf in prefab.GetComponentsInChildren<MeshFilter>(true))
+            {
+                var mr = mf.GetComponent<MeshRenderer>();
+                if (mf.sharedMesh == null || mr == null) continue;
+
+                Matrix4x4 m = toRoot * mf.transform.localToWorldMatrix;
+                var part = new GameObject(mf.name, typeof(MeshFilter), typeof(MeshRenderer));
+                part.transform.SetParent(model, false);
+                part.transform.localPosition = m.GetColumn(3);
+                part.transform.localRotation = m.rotation;
+                part.transform.localScale = m.lossyScale;
+                part.GetComponent<MeshFilter>().sharedMesh = mf.sharedMesh;
+                part.GetComponent<MeshRenderer>().sharedMaterials = mr.sharedMaterials;
+            }
+            return model;
+        }
+
+        /// <summary>Scales the model so its biggest side is `size` metres and centres it on its parent.</summary>
+        private static void FitToSize(Transform model, float size)
+        {
+            var renderers = model.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0) return;
+
+            Bounds b = renderers[0].bounds;
+            foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
+            float biggest = Mathf.Max(b.size.x, b.size.y, b.size.z);
+            if (biggest < 0.0001f) return;
+
+            model.localScale *= size / biggest;
+
+            b = renderers[0].bounds;
+            foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
+            model.position -= b.center - model.parent.position;
         }
 
         private void BuildHelp(Transform root)
@@ -441,6 +517,23 @@ namespace Game.UI
             return tex;
         }
 
+        /// <summary>Round soft glow: `color` in the middle fading to transparent at the edge.</summary>
+        private static Texture2D MakeRadialGlow(Color color)
+        {
+            const int size = 128;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x, y), new Vector2(size / 2f, size / 2f)) / (size / 2f);
+                Color c = color;
+                c.a *= Mathf.SmoothStep(1f, 0f, d);
+                tex.SetPixel(x, y, c);
+            }
+            tex.Apply();
+            return tex;
+        }
+
         /// <summary>White square with rounded corners (radius in pixels), ready for 9-slicing.</summary>
         private static Sprite MakeRoundedSprite(int size, int radius)
         {
@@ -492,6 +585,8 @@ namespace Game.UI
         // ---------- Editor: create the scene ----------
 #if UNITY_EDITOR
         private const string MenuScenePath = "Assets/_Project/Scenes/MainMenu.unity";
+        private static readonly string[] ShowcaseIds =
+            { "banana", "soda", "apple", "donut", "bread", "cupcake", "orange", "chocolate" };
 
         [MenuItem("Tools/Main Menu/Create Menu Scene", priority = 50)]
         private static void CreateMenuScene()
@@ -517,6 +612,25 @@ namespace Game.UI
 
                 new GameObject("MainMenu").AddComponent<MainMenu>();
                 EditorSceneManager.SaveScene(scene, MenuScenePath);
+            }
+
+            // Fill the 3D showcase with the team's pickup prefabs (re-done every run).
+            var menu = FindAnyObjectByType<MainMenu>();
+            if (menu != null)
+            {
+                var found = new List<GameObject>();
+                foreach (string id in ShowcaseIds)
+                {
+                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Project/Prefabs/Pickups/Pickup_{id}.prefab");
+                    if (prefab != null) found.Add(prefab);
+                }
+                var so = new SerializedObject(menu);
+                var prop = so.FindProperty("showcaseItems");
+                prop.arraySize = found.Count;
+                for (int i = 0; i < found.Count; i++) prop.GetArrayElementAtIndex(i).objectReferenceValue = found[i];
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorSceneManager.MarkSceneDirty(menu.gameObject.scene);
+                EditorSceneManager.SaveScene(menu.gameObject.scene);
             }
 
             // The menu must be the FIRST scene in the build; keep every other scene after it.
