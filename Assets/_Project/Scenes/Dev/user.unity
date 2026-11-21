@@ -1728,6 +1728,50 @@ PrefabInstance:
       propertyPath: tracker
       value: 
       objectReference: {fileID: 1430646112}
+    - target: {fileID: 5723493682475078637, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5723493682475078637, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096994897449298342, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096994897449298342, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096994897449298342, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096994897449298342, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096994897449298342, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096994897449298342, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096994897449298342, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8096994897449298342, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8281887352270412563, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_AdditionalShaderChannelsFlag
+      value: 25
+      objectReference: {fileID: 0}
     - target: {fileID: 8583252744821969209, guid: 572b6193174124f3c846e55dda252c26, type: 3}
       propertyPath: m_fontAsset
       value: 
@@ -1740,6 +1784,10 @@ PrefabInstance:
       propertyPath: m_sharedMaterial
       value: 
       objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    - target: {fileID: 8583252744821969209, guid: 572b6193174124f3c846e55dda252c26, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 8583252744821969209, guid: 572b6193174124f3c846e55dda252c26, type: 3}
       propertyPath: m_ActiveFontFeatures.Array.size
       value: 0
