@@ -103,6 +103,8 @@ GameObject:
   - component: {fileID: 2551762329284621686}
   - component: {fileID: 7888327251893774221}
   - component: {fileID: 7062966833721976831}
+  - component: {fileID: 5120934871652208113}
+  - component: {fileID: 5120934871652208114}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -372,3 +374,39 @@ MonoBehaviour:
   sensitivity: 0.1
   minPitch: -85
   maxPitch: 85
+--- !u!114 &5120934871652208113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6532191196995002306}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82cb7b721d0a4f208a668aff69dc5bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.PlayerInteractor
+  playerCamera: {fileID: 8064672193279284203}
+  holdPoint: {fileID: 0}
+  interactDistance: 3
+  interactMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  dropSpeed: 1.5
+--- !u!114 &5120934871652208114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6532191196995002306}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60810d1784894ca88cbd265f5e4be7b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.InteractionPromptUI
+  interactor: {fileID: 5120934871652208113}
+  label: {fileID: 0}
+  progressFill: {fileID: 0}
+  drawCrosshair: 1
+  fontSize: 22
