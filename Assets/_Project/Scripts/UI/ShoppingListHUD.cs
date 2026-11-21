@@ -77,8 +77,12 @@ namespace Game.UI
             row.Icon.sprite = icon;
             row.Icon.gameObject.SetActive(icon != null);
 
-            string mark = p.IsDone ? doneMark + " " : "";
-            row.Label.text = $"{mark}{p.Item.displayName} {p.Collected}/{p.Required}";
+            // Only use the mark if the font can draw it (the default font has no ✓ — it showed a box).
+            bool canDrawMark = !string.IsNullOrEmpty(doneMark) && row.Label.font != null &&
+                               row.Label.font.HasCharacters(doneMark, out _, true, false);
+            string mark = p.IsDone && canDrawMark ? doneMark + " " : "";
+            string line = $"{p.Item.displayName} {p.Collected}/{p.Required}";
+            row.Label.text = p.IsDone ? $"{mark}<s>{line}</s>" : line; // done: green + struck through
             row.Label.color = p.IsDone ? doneColor : normalColor;
         }
 

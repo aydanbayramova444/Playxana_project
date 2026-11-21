@@ -80,7 +80,10 @@ namespace Game.EditorTests
                 // Perfect defender: the moment a thief has something in hand, press E on them.
                 foreach (var thief in Object.FindObjectsByType<ShelterIntruder>())
                     if (thief.IsCarrying && thief.CanInteract(player))
+                    {
                         thief.Interact(player);
+                        Assert.IsFalse(thief.IsCarrying, "A hit thief should drop what they carry.");
+                    }
                 yield return null;
             }
 
@@ -100,6 +103,104 @@ namespace Game.EditorTests
                 yield return null;
             }
             Assert.AreEqual("MainMenu", SceneManager.GetActiveScene().name);
+
+            Time.timeScale = 1f;
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest]
+        public IEnumerator Level2Win_EnterGoesToShelter()
+        {
+            EditorSceneManager.OpenScene("Assets/_Project/Scenes/Level2.unity");
+            yield return new EnterPlayMode();
+
+            Game.Level2.Level2Manager level2 = null;
+            float t = 0f;
+            while ((level2 = Object.FindAnyObjectByType<Game.Level2.Level2Manager>()) == null && t < 10f)
+            {
+                t += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            Assert.IsNotNull(level2, "No Level2Manager in Level2.unity.");
+
+            level2.ReachShelter();   // you made it to the shelter
+            yield return null;
+            level2.EnterShelter();   // what Enter / Space does on the win screen
+
+            ShelterDirector d = null;
+            yield return WaitForRound(r => d = r);
+            Assert.AreEqual("Shelter", SceneManager.GetActiveScene().name);
+            Assert.AreEqual(GameState.Playing, GameManager.Instance.State);
+            Debug.Log($"[ShelterTest] Level2 -> Shelter OK, supplies={d.TotalSupplies}");
+
+            Time.timeScale = 1f;
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest]
+        public IEnumerator Intruder_TakesTwoOrThreeHits_ThenDownOrRunsAway()
+        {
+            EditorSceneManager.OpenScene(ScenePath);
+            yield return new EnterPlayMode();
+
+            ShelterDirector d = null;
+            yield return WaitForRound(r => d = r);
+            var player = Object.FindAnyObjectByType<Game.Interaction.PlayerInteractor>();
+
+            int checkedThieves = 0;
+            float start = Time.time;
+            while (checkedThieves < 4 && Time.time - start < 40f)
+            {
+                foreach (var thief in Object.FindObjectsByType<ShelterIntruder>())
+                {
+                    if (thief.IsStopped || thief.Health != thief.MaxHealth) continue;
+                    int max = thief.MaxHealth, hits = 0;
+                    Assert.That(max, Is.InRange(2, 3), "Intruders should take 2 or 3 hits.");
+                    while (!thief.IsStopped && hits < 5)
+                    {
+                        thief.Interact(player);
+                        hits++;
+                        if (hits < max) Assert.IsFalse(thief.IsStopped, $"Stopped after {hits} hit(s) but has {max} health.");
+                    }
+                    Assert.AreEqual(max, hits, "Should stop exactly on the last hit.");
+                    Assert.IsTrue(thief.IsDown || thief.IsFleeing, "After the last hit: down or running away.");
+                    checkedThieves++;
+                }
+                yield return null;
+            }
+            Debug.Log($"[ShelterTest] Hit test: {checkedThieves} intruders each stopped after 2-3 hits");
+            Assert.GreaterOrEqual(checkedThieves, 4);
+
+            Time.timeScale = 1f;
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest]
+        public IEnumerator DroppedItems_AreStolenOffTheFloor()
+        {
+            EditorSceneManager.OpenScene(ScenePath);
+            yield return new EnterPlayMode();
+
+            ShelterDirector d = null;
+            yield return WaitForRound(r => d = r);
+
+            // Throw every supply onto the floor: the only way to steal now is picking it up off the floor.
+            int onFloor = 0;
+            foreach (var shelf in Object.FindObjectsByType<Shelf>())
+            {
+                Game.Interaction.Pickup item;
+                while ((item = shelf.TakeOneItem()) != null)
+                {
+                    item.KnockByNpc(shelf.transform.forward * 1.5f + Random.insideUnitSphere * 0.5f + Vector3.up);
+                    onFloor++;
+                }
+            }
+            Assert.Greater(onFloor, 0);
+
+            float start = Time.time;
+            while (d.Stolen == 0 && Time.time - start < 40f) yield return null;
+            Debug.Log($"[ShelterTest] Floor: {onFloor} items on the floor, stolen={d.Stolen} after {Time.time - start:0.0}s");
+            Assert.Greater(d.Stolen, 0, "Intruders never picked anything up off the floor.");
 
             Time.timeScale = 1f;
             yield return new ExitPlayMode();

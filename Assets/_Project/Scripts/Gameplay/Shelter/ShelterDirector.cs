@@ -102,7 +102,7 @@ namespace Game.Gameplay
             _timeLeft = surviveSeconds;
             _nextSpawn = firstIntruderDelay;
             _running = true;
-            Message("Protect your supplies.\nLeft click: swing the bat.  E: scare a thief off.", 5f);
+            Message("Protect your supplies.\nLeft click or E: hit a thief. 2-3 hits stop them.", 5f);
             UpdateHud();
         }
 
@@ -139,11 +139,19 @@ namespace Game.Gameplay
         public void OnIntruderGrabbed(ShelterIntruder who, Game.Interaction.Pickup item) =>
             Message($"Someone grabbed {Pretty(item.ItemId)}!", 2.5f, Blood);
 
-        public void OnIntruderScared(ShelterIntruder who)
+        /// <summary>A hit that didn't finish them (they have 2–3 hits).</summary>
+        public void OnIntruderHit(ShelterIntruder who, bool droppedItem)
+        {
+            Swing(); // pressing E on a thief also swings the bat
+            Message(droppedItem ? "They dropped it! Grab it before someone else does." : "Hit!", 1.5f);
+        }
+
+        /// <summary>The last hit: knocked down or running away scared.</summary>
+        public void OnIntruderStopped(ShelterIntruder who, bool knockedDown)
         {
             _scared++;
-            Swing(); // pressing E on a thief also swings the bat
-            Message("Scared off.", 1.5f);
+            Swing();
+            Message(knockedDown ? "Down." : "Ran off scared.", 1.5f);
         }
 
         public void OnSupplyStolen(ShelterIntruder who, string itemId)
@@ -202,8 +210,8 @@ namespace Game.Gameplay
             _endTitle.text = win ? winTitle : loseTitle;
             _endTitle.color = win ? Bone : Blood;
             _endStats.text = win
-                ? $"Supplies kept: {SuppliesLeft}/{_total}\nIntruders scared off: {_scared}"
-                : $"Held out for {Clock(surviveSeconds - _timeLeft)}\nIntruders scared off: {_scared}";
+                ? $"Supplies kept: {SuppliesLeft}/{_total}\nIntruders stopped: {_scared}"
+                : $"Held out for {Clock(surviveSeconds - _timeLeft)}\nIntruders stopped: {_scared}";
             StartCoroutine(FadeIn(_endGroup, 1.2f));
             _endGroup.interactable = true;
             _endGroup.blocksRaycasts = true;
