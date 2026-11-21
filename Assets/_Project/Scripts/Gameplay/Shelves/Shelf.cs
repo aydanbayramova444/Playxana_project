@@ -246,9 +246,15 @@ namespace Game.Gameplay
             // so it is turned around to face the aisle (the shelf's front).
             float textZ = frontZ + 0.012f;
             float textY = y + 0.015f;           // a bit above centre, clear of the stripe
+            // Two separate boxes so name and count can never overlap:
+            // name = left 66 % of the sign, count = right 30 %.
+            // (The text is turned 180°, so the viewer's left is +X in shelf space.)
             float inner = width - 0.12f;
-            _label = SignText(sign, "Name", new Vector3(0, textY, textZ), inner, TextAlignmentOptions.Left);
-            _count = SignText(sign, "Count", new Vector3(0, textY, textZ), inner, TextAlignmentOptions.Right);
+            float nameW = inner * 0.66f, countW = inner * 0.30f;
+            _label = SignText(sign, "Name", new Vector3(inner / 2f - nameW / 2f, textY, textZ), nameW,
+                TextAlignmentOptions.MidlineLeft);
+            _count = SignText(sign, "Count", new Vector3(-(inner / 2f - countW / 2f), textY, textZ), countW,
+                TextAlignmentOptions.MidlineRight);
             return _label;
         }
 
@@ -268,7 +274,7 @@ namespace Game.Gameplay
             text.fontSizeMax = 1.1f;
             text.fontStyle = FontStyles.Bold | FontStyles.UpperCase;
             text.characterSpacing = 4f;
-            text.alignment = align | TextAlignmentOptions.Midline;
+            text.alignment = align; // e.g. MidlineLeft (combining Left | Midline with | breaks TMP alignment)
             text.textWrappingMode = TextWrappingModes.NoWrap;
             text.color = new Color(0.93f, 0.91f, 0.86f);
             return text;
@@ -284,9 +290,7 @@ namespace Game.Gameplay
                 return;
             }
 
-            // Leave room for the count on the right.
-            _label.text = item.displayName;
-            _label.margin = new Vector4(0, 0, IsEmpty ? 0.55f : 0.25f, 0);
+            _label.text = item.displayName; // has its own box, no margin needed
             _count.text = IsEmpty ? "<color=#FF4444>SOLD OUT</color>" : $"<color=#FFC94A>x{Stock}</color>";
         }
 
