@@ -68,11 +68,26 @@ namespace Game.Gameplay
             return true;
         }
 
+        /// <summary>NPC takes one item off the shelf and gets it (to carry or knock over). Null if empty.</summary>
+        public Game.Interaction.Pickup TakeOneItem() => _slot != null ? _slot.TakeLast() : null;
+
+        /// <summary>Where an NPC stands to reach the shelf: on the floor in front of it.</summary>
+        public Vector3 FrontPoint => transform.position + transform.forward * (depth / 2f + 0.6f);
+
         // ---------- Unity ----------
 
         private void Start()
         {
             BuildFrame();
+
+            // The shelf is built on Play, so the baked NavMesh doesn't know it: cut it out at runtime
+            // so NPC shoppers walk around shelves, not through them.
+            var obstacle = gameObject.AddComponent<UnityEngine.AI.NavMeshObstacle>();
+            obstacle.shape = UnityEngine.AI.NavMeshObstacleShape.Box;
+            obstacle.center = new Vector3(0, height / 2f, 0);
+            obstacle.size = new Vector3(width, height, depth);
+            obstacle.carving = true;
+
             BuildSlot();
             if (showLabel) _label = CreateLabel();
             SpawnItems();

@@ -83,6 +83,22 @@ namespace Game.Interaction
 
         protected override void OnInteract(PlayerInteractor player) => player.PickUp(this);
 
+        // ----- Called by NPC shoppers -----
+
+        /// <summary>An NPC takes this item: it sits in their hand and the player can't grab it.</summary>
+        public void TakeByNpc(Transform hand)
+        {
+            OnPickedUp(); // leaves its shelf slot, colliders off, kinematic, IsHeld = true
+            PlacementHelper.SnapTo(gameObject, hand, sitOnTop: false);
+        }
+
+        /// <summary>An NPC knocks this item off: it flies off and lands on the floor, free for anyone.</summary>
+        public void KnockByNpc(Vector3 velocity)
+        {
+            OnPickedUp();
+            OnDropped(velocity); // unparents, colliders on, physics on, IsHeld = false
+        }
+
         // ----- Called by PlayerInteractor / ItemSlot -----
 
         internal void OnPickedUp()
