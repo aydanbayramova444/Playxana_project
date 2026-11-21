@@ -40,6 +40,32 @@ namespace Game.EditorTools
         /// <summary>-executeMethod Game.EditorTools.Level2BuilderTool.AddSafeZonesFromCommandLine (adds to Level2.unity)</summary>
         public static void AddSafeZonesFromCommandLine() => AddSafeZones(EditorSceneManager.OpenScene(ScenePath));
 
+        /// <summary>
+        /// Rebuilds only the street (road, sidewalks, ground as 10 m tiles) and the safe zones in Level2.unity.
+        /// -executeMethod Game.EditorTools.Level2BuilderTool.RebuildStreetFromCommandLine
+        /// </summary>
+        [MenuItem("Tools/Level 2/Rebuild Street (fix road smearing)", priority = 83)]
+        public static void RebuildStreetMenu()
+        {
+            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) RebuildStreetFromCommandLine();
+        }
+
+        public static void RebuildStreetFromCommandLine()
+        {
+            var scene = EditorSceneManager.OpenScene(ScenePath);
+            var root = GameObject.Find("Level2");
+            if (root != null)
+            {
+                S.Mats.Clear();
+                var old = root.transform.Find("Street");
+                if (old != null) Object.DestroyImmediate(old.gameObject);
+                var street = S.Group(root.transform, "Street");
+                street.SetSiblingIndex(0);
+                BuildStreet(street);
+            }
+            AddSafeZones(scene); // also saves the scene
+        }
+
         [MenuItem("Tools/Level 2/Add Store Exit To Open Scene", priority = 81)]
         public static void AddStoreExitMenu() => AddStoreExit(EditorSceneManager.GetActiveScene());
 
@@ -97,11 +123,11 @@ namespace Game.EditorTools
         static void BuildStreet(Transform p)
         {
             float len = ShelterZ - RoadStart, mid = (ShelterZ + RoadStart) / 2f;
-            S.Box(p, "Ground", new Vector3(0, -0.12f, mid), new Vector3(90, 0.2f, len + 60), S.M("Ground", 0.5f));
-            S.Box(p, "Road", new Vector3(0, -0.05f, mid), new Vector3(HalfRoad * 2, 0.1f, len), S.M("Asphalt", 0.7f));
+            S.Tiles(p, "Ground", new Vector3(0, -0.12f, mid), new Vector3(90, 0.2f, len + 60), S.M("Ground", 0.5f));
+            S.Tiles(p, "Road", new Vector3(0, -0.05f, mid), new Vector3(HalfRoad * 2, 0.1f, len), S.M("Asphalt", 0.7f));
             float sw = SidewalkOuter - HalfRoad;
             foreach (float side in new[] { -1f, 1f })
-                S.Box(p, "Sidewalk", new Vector3(side * (HalfRoad + sw / 2f), 0.06f, mid), new Vector3(sw, 0.12f, len), S.M("Sidewalk", 1f));
+                S.Tiles(p, "Sidewalk", new Vector3(side * (HalfRoad + sw / 2f), 0.06f, mid), new Vector3(sw, 0.12f, len), S.M("Sidewalk", 1f));
 
             var paint = S.M("RoadPaint", 2f);
             for (float z = RoadStart + 2f; z < ShelterZ - 3f; z += 5f)
@@ -327,10 +353,19 @@ namespace Game.EditorTools
                 foreach (float dz in new[] { -length / 2f + 0.1f, length / 2f - 0.1f })
                     S.Box(zone, "Post", new Vector3(side * (inner + 0.05f), 1.2f, z + dz), new Vector3(0.08f, 2.3f, 0.08f), metal);
 
-                // Sign under the roof, facing the road (cube's -Z face turned towards the street)
-                var signGo = S.NoCollider(S.Box(zone, "Sign_Bezopasno", new Vector3(side * (inner - 0.03f), 2.15f, z),
-                    new Vector3(2f, 0.5f, 0.04f), sign));
-                signGo.transform.rotation = Quaternion.Euler(0, side > 0 ? 90f : -90f, 0);
+                // Sign standing ON the roof, facing the road (cube's -Z face turned towards the street).
+                // Above the roof the player inside can't see it, and a metal board behind it hides
+                // the mirrored back side.
+                var turn = Quaternion.Euler(0, side > 0 ? 90f : -90f, 0);
+                var signGo = S.NoCollider(S.Box(zone, "Sign_Bezopasno", new Vector3(side * (inner + 0.15f), 2.82f, z),
+                    new Vector3(2.4f, 0.6f, 0.03f), sign));
+                signGo.transform.rotation = turn;
+                var back = S.NoCollider(S.Box(zone, "Sign_Back", new Vector3(side * (inner + 0.19f), 2.82f, z),
+                    new Vector3(2.44f, 0.64f, 0.04f), metal));
+                back.transform.rotation = turn;
+                foreach (float dz in new[] { -0.9f, 0.9f })
+                    S.NoCollider(S.Box(zone, "Sign_Leg", new Vector3(side * (inner + 0.2f), 2.5f, z + dz),
+                        new Vector3(0.05f, 0.25f, 0.05f), metal));
 
                 var l = new GameObject("GreenLight").AddComponent<Light>();
                 l.transform.SetParent(zone, false);

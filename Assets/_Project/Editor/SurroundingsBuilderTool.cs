@@ -49,6 +49,31 @@ namespace Game.EditorTools
             Build();
         }
 
+        /// <summary>
+        /// Rebuilds only Surroundings/Street (road, sidewalks, ground) in -envScene, keeping everything else.
+        /// -executeMethod Game.EditorTools.SurroundingsBuilderTool.RebuildStreetFromCommandLine -envScene path
+        /// </summary>
+        [MenuItem("Tools/Store/Rebuild Street Only (fix road smearing)", priority = 74)]
+        public static void RebuildStreetMenu() => RebuildStreetFromCommandLine();
+
+        public static void RebuildStreetFromCommandLine()
+        {
+            string[] args = System.Environment.GetCommandLineArgs();
+            int i = System.Array.IndexOf(args, "-envScene");
+            var scene = i >= 0 && i + 1 < args.Length ? EditorSceneManager.OpenScene(args[i + 1]) : EditorSceneManager.GetActiveScene();
+            var root = GameObject.Find("Surroundings");
+            if (root == null) { Debug.LogWarning("[Surroundings] Nothing to rebuild."); return; }
+            Mats.Clear();
+            var old = root.transform.Find("Street");
+            if (old != null) Object.DestroyImmediate(old.gameObject);
+            var street = Group(root.transform, "Street");
+            street.SetSiblingIndex(0);
+            BuildGroundAndStreet(street);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log("[Surroundings] Street rebuilt from 10 m tiles.");
+        }
+
         public static void Build()
         {
             var scene = EditorSceneManager.GetActiveScene();
@@ -87,14 +112,14 @@ namespace Game.EditorTools
 
         static void BuildGroundAndStreet(Transform p)
         {
-            Box(p, "Ground", new Vector3(0, -0.12f, -6), new Vector3(110, 0.2f, 90), M("Ground", 0.5f));
+            Tiles(p, "Ground", new Vector3(0, -0.12f, -6), new Vector3(110, 0.2f, 90), M("Ground", 0.5f));
 
             // Near sidewalk (store side) and far sidewalk, 12 cm high
-            Box(p, "Sidewalk_Near", new Vector3(0, 0.06f, -2.6f), new Vector3(90, 0.12f, 2.8f), M("Sidewalk", 1f));
-            Box(p, "Sidewalk_Far", new Vector3(0, 0.06f, -13.4f), new Vector3(90, 0.12f, 2.8f), M("Sidewalk", 1f));
+            Tiles(p, "Sidewalk_Near", new Vector3(0, 0.06f, -2.6f), new Vector3(90, 0.12f, 2.8f), M("Sidewalk", 1f));
+            Tiles(p, "Sidewalk_Far", new Vector3(0, 0.06f, -13.4f), new Vector3(90, 0.12f, 2.8f), M("Sidewalk", 1f));
 
             // Road
-            Box(p, "Road", new Vector3(0, -0.05f, -8f), new Vector3(90, 0.1f, 8f), M("Asphalt", 0.7f));
+            Tiles(p, "Road", new Vector3(0, -0.05f, -8f), new Vector3(90, 0.1f, 8f), M("Asphalt", 0.7f));
             var paint = M("RoadPaint", 2f);
             for (float x = -42f; x <= 42f; x += 5f)
                 NoCollider(Box(p, "LaneDash", new Vector3(x, 0.003f, -8f), new Vector3(2.2f, 0.01f, 0.15f), paint));
@@ -450,6 +475,25 @@ namespace Game.EditorTools
             go.GetComponent<Renderer>().sharedMaterial = mat;
             go.isStatic = true;
             return go;
+        }
+
+        /// <summary>
+        /// Like Box, but cut into tiles of about <paramref name="tile"/> metres (X and Z).
+        /// Big single polygons get smeared by the PS1 vertex snapping; small tiles don't.
+        /// Keep size / tile × texture-tiles-per-metre a whole number so the pattern has no seams.
+        /// </summary>
+        internal static GameObject Tiles(Transform parent, string name, Vector3 center, Vector3 size, Material mat,
+                                         float tile = 10f)
+        {
+            var group = new GameObject(name).transform;
+            group.SetParent(parent, false);
+            int nx = Mathf.Max(1, Mathf.RoundToInt(size.x / tile)), nz = Mathf.Max(1, Mathf.RoundToInt(size.z / tile));
+            float sx = size.x / nx, sz = size.z / nz;
+            for (int i = 0; i < nx; i++)
+            for (int j = 0; j < nz; j++)
+                Box(group, name, new Vector3(center.x - size.x / 2f + sx * (i + 0.5f), center.y,
+                    center.z - size.z / 2f + sz * (j + 0.5f)), new Vector3(sx, size.y, sz), mat);
+            return group.gameObject;
         }
 
         internal static GameObject Local(Transform parent, string name, Vector3 localPos, Vector3 size, Material mat)
