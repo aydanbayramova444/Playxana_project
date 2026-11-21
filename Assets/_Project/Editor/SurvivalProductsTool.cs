@@ -29,12 +29,19 @@ namespace Game.EditorTools
         const string ListPath     = "Assets/_Project/ScriptableObjects/ShoppingList_Test.asset";
         const string MainScene    = "Assets/_Project/Scenes/Main.unity";
 
-        // id (= Pickup.ItemId = ItemData.id), name in the game, how many a shelf starts with
-        static readonly (string id, string name, int stock)[] Products =
+        // id (= Pickup.ItemId = ItemData.id), name in the game, how many a shelf starts with,
+        // and whether it goes on the test shopping list
+        static readonly (string id, string name, int stock, bool onList)[] Products =
         {
-            ("toilet_paper", "Toilet Paper", 4),
-            ("buckwheat",    "Buckwheat",    6),
-            ("canned_meat",  "Canned Meat",  8),
+            ("toilet_paper",  "Toilet Paper",    4, true),
+            ("buckwheat",     "Buckwheat",       6, true),
+            ("canned_meat",   "Canned Meat",     8, true),
+            ("water_jug",     "Water 5L",        3, true),
+            ("batteries",     "Batteries",       6, false),
+            ("candles",       "Candles",         6, false),
+            ("noodles",       "Instant Noodles", 8, false),
+            ("first_aid",     "First Aid Kit",   2, false),
+            ("matches",       "Matches",        12, false),
         };
 
         // ---------------------------------------------------------------- 1. products
@@ -86,12 +93,93 @@ namespace Game.EditorTools
                 Cylinder(root, "Bottom", d + 0.004f, 0.006f, 0.002f, canLid);
             });
 
+            Material waterJug  = Mat("M_WaterJug", "T_WaterJug", smoothness: 0.4f);
+            Material waterCap  = Mat("M_WaterCap", "T_WaterCap");
+            Material batteries = Mat("M_Batteries", "T_Batteries");
+            Material candle    = Mat("M_Candle", "T_Candle");
+            Material noodles   = Mat("M_NoodlesSide", "T_NoodlesSide");
+            Material noodleLid = Mat("M_NoodlesLid", "T_NoodlesLid");
+            Material firstAid  = Mat("M_FirstAid", "T_FirstAid");
+            Material matches   = Mat("M_Matches", "T_Matches");
+            Material wick      = Mat("M_CanLid", "T_CanLid"); // dark grey bit, reused
+
+            SavePickup("water_jug", "Water 5L", 5f, root =>
+            {
+                const float d = 0.17f, h = 0.27f;
+                Cylinder(root, "Body", d, h, h / 2f, waterJug);
+                Cylinder(root, "Shoulder", d * 0.6f, 0.03f, h + 0.012f, waterJug);
+                Cylinder(root, "Cap", 0.045f, 0.03f, h + 0.04f, waterCap);
+                // handle on top: a small box bridge
+                Part(PrimitiveType.Cube, "Handle", root, new Vector3(0f, h + 0.035f, 0.05f),
+                    new Vector3(0.03f, 0.05f, 0.05f), waterCap);
+            });
+
+            SavePickup("batteries", "Batteries", 0.2f, root =>
+            {
+                var pack = Part(PrimitiveType.Cube, "Pack", root, new Vector3(0f, 0.07f, 0f),
+                    new Vector3(0.09f, 0.14f, 0.02f), batteries);
+                pack.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            });
+
+            SavePickup("candles", "Candles", 0.3f, root =>
+            {
+                // three candles in a row
+                for (int i = -1; i <= 1; i++)
+                {
+                    var c = new GameObject($"Candle_{i + 1}").transform;
+                    c.SetParent(root, false);
+                    c.localPosition = new Vector3(i * 0.032f, 0f, 0f);
+                    Cylinder(c, "Wax", 0.026f, 0.16f, 0.08f, candle);
+                    Part(PrimitiveType.Cube, "Wick", c, new Vector3(0f, 0.168f, 0f),
+                        new Vector3(0.003f, 0.016f, 0.003f), wick);
+                }
+            });
+
+            SavePickup("noodles", "Instant Noodles", 0.15f, root =>
+            {
+                // cup: slightly wider at the top
+                Cylinder(root, "CupBottom", 0.085f, 0.05f, 0.025f, noodles);
+                Cylinder(root, "CupTop", 0.1f, 0.06f, 0.08f, noodles);
+                Cylinder(root, "Lid", 0.104f, 0.004f, 0.111f, noodleLid);
+            });
+
+            SavePickup("first_aid", "First Aid Kit", 0.8f, root =>
+            {
+                var box = Part(PrimitiveType.Cube, "Box", root, new Vector3(0f, 0.07f, 0f),
+                    new Vector3(0.2f, 0.14f, 0.07f), firstAid);
+                box.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+                Part(PrimitiveType.Cube, "Handle", root, new Vector3(0f, 0.15f, 0f),
+                    new Vector3(0.08f, 0.02f, 0.02f), wick);
+            });
+
+            SavePickup("matches", "Matches", 0.05f, root =>
+            {
+                Part(PrimitiveType.Cube, "Box", root, new Vector3(0f, 0.0175f, 0f),
+                    new Vector3(0.05f, 0.035f, 0.015f), matches).transform.localRotation =
+                    Quaternion.Euler(0f, 180f, 0f);
+            });
+
             foreach (var p in Products) MakeItemData(p.id, p.name);
             AddToShoppingList();
 
             AssetDatabase.SaveAssets();
-            Debug.Log("[Products] Made toilet paper, buckwheat and canned meat in " + PrefabFolder +
+            Debug.Log($"[Products] Made {Products.Length} survival products in " + PrefabFolder +
                       ". Next: Tools → Products → 2. Add Product Shelves To Open Scene");
+        }
+
+        /// <summary>
+        /// Command line (Unity closed): builds the products, then the shelves in -productScene.
+        /// Unity -batchmode -quit -projectPath . -executeMethod Game.EditorTools.SurvivalProductsTool.BuildFromCommandLine
+        ///       -productScene Assets/_Project/Scenes/Dev/user.unity
+        /// </summary>
+        public static void BuildFromCommandLine()
+        {
+            MakeProducts();
+            string[] args = System.Environment.GetCommandLineArgs();
+            int i = System.Array.IndexOf(args, "-productScene");
+            if (i < 0 || i + 1 >= args.Length) return;
+            EditorSceneManager.OpenScene(args[i + 1]);
+            PlaceShelves(EditorSceneManager.GetActiveScene());
         }
 
         /// <summary>PS1 look: crisp pixels (Point), no mipmaps, no compression blur.</summary>
@@ -210,6 +298,7 @@ namespace Game.EditorTools
 
             foreach (var p in Products)
             {
+                if (!p.onList) continue;
                 var data = AssetDatabase.LoadAssetAtPath<ItemData>($"{ItemsFolder}/Item_{p.id}.asset");
                 if (data == null || list.entries.Exists(e => e != null && e.item == data)) continue;
                 list.entries.Add(new ShoppingListData.Entry { item = data, amount = 1 });
@@ -229,6 +318,11 @@ namespace Game.EditorTools
                     "Add to Main", "Cancel"))
                 return;
 
+            PlaceShelves(scene);
+        }
+
+        static void PlaceShelves(UnityEngine.SceneManagement.Scene scene)
+        {
             var old = GameObject.Find("ProductShelves");
             if (old != null) Object.DestroyImmediate(old);
 
@@ -240,7 +334,9 @@ namespace Game.EditorTools
 
             var group = new GameObject("ProductShelves").transform;
 
-            // Product shelves + one empty shelf at the end; a row on the player's LEFT, facing the path.
+            // Product shelves + one empty shelf at the end, in two rows on the player's LEFT
+            // (5 per row) with an aisle between them; all fronts face the player's side.
+            const int perRow = 5;
             int count = Products.Length + 1;
             for (int i = 0; i < count; i++)
             {
@@ -256,7 +352,8 @@ namespace Game.EditorTools
 
                 var shelf = new GameObject(empty ? "Shelf_empty" : $"Shelf_{data.id}");
                 shelf.transform.SetParent(group, false);
-                Vector3 pos = origin - right * 3f + fwd * (1f + i * 1.9f);
+                int row = i / perRow, col = i % perRow;
+                Vector3 pos = origin - right * (3f + row * 3.5f) + fwd * (1f + col * 1.9f);
                 shelf.transform.position = new Vector3(pos.x, origin.y, pos.z);
                 shelf.transform.rotation = Quaternion.LookRotation(right);
 
