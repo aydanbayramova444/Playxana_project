@@ -43,6 +43,9 @@ Shader "Game/PS1 Lit"
         // Snap a clip-space position to a low-res screen grid (the PS1 had no sub-pixel precision).
         float4 SnapToGrid(float4 positionCS)
         {
+            // Vertices right at / behind the camera have a tiny or negative w: snapping them would throw
+            // them far across the screen and smear big polygons (roads) — leave those alone.
+            if (positionCS.w < 1.0) return positionCS;
             float aspect = _ScreenParams.x / max(_ScreenParams.y, 1.0);
             float2 grid = float2(_SnapResolution * aspect, _SnapResolution) * 0.5;
             float2 ndc = positionCS.xy / positionCS.w;

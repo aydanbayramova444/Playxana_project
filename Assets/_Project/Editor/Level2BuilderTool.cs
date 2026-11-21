@@ -34,6 +34,38 @@ namespace Game.EditorTools
             Build();
         }
 
+        [MenuItem("Tools/Level 2/Add Safe Zones To Open Scene", priority = 82)]
+        public static void AddSafeZonesMenu() => AddSafeZones(EditorSceneManager.GetActiveScene());
+
+        /// <summary>-executeMethod Game.EditorTools.Level2BuilderTool.AddSafeZonesFromCommandLine (adds to Level2.unity)</summary>
+        public static void AddSafeZonesFromCommandLine() => AddSafeZones(EditorSceneManager.OpenScene(ScenePath));
+
+        /// <summary>
+        /// Rebuilds only the street (road, sidewalks, ground as 10 m tiles) and the safe zones in Level2.unity.
+        /// -executeMethod Game.EditorTools.Level2BuilderTool.RebuildStreetFromCommandLine
+        /// </summary>
+        [MenuItem("Tools/Level 2/Rebuild Street (fix road smearing)", priority = 83)]
+        public static void RebuildStreetMenu()
+        {
+            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) RebuildStreetFromCommandLine();
+        }
+
+        public static void RebuildStreetFromCommandLine()
+        {
+            var scene = EditorSceneManager.OpenScene(ScenePath);
+            var root = GameObject.Find("Level2");
+            if (root != null)
+            {
+                S.Mats.Clear();
+                var old = root.transform.Find("Street");
+                if (old != null) Object.DestroyImmediate(old.gameObject);
+                var street = S.Group(root.transform, "Street");
+                street.SetSiblingIndex(0);
+                BuildStreet(street);
+            }
+            AddSafeZones(scene); // also saves the scene
+        }
+
         [MenuItem("Tools/Level 2/Add Store Exit To Open Scene", priority = 81)]
         public static void AddStoreExitMenu() => AddStoreExit(EditorSceneManager.GetActiveScene());
 
@@ -81,6 +113,7 @@ namespace Game.EditorTools
             else Debug.LogWarning("[Level2] Player prefab not found at " + PlayerPath);
 
             new GameObject("Level2Manager").AddComponent<Level2Manager>();
+            BuildSafeZones(S.Group(root, "SafeZones"));
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddToBuild(ScenePath);
@@ -90,11 +123,11 @@ namespace Game.EditorTools
         static void BuildStreet(Transform p)
         {
             float len = ShelterZ - RoadStart, mid = (ShelterZ + RoadStart) / 2f;
-            S.Box(p, "Ground", new Vector3(0, -0.12f, mid), new Vector3(90, 0.2f, len + 60), S.M("Ground", 0.5f));
-            S.Box(p, "Road", new Vector3(0, -0.05f, mid), new Vector3(HalfRoad * 2, 0.1f, len), S.M("Asphalt", 0.7f));
+            S.Tiles(p, "Ground", new Vector3(0, -0.12f, mid), new Vector3(90, 0.2f, len + 60), S.M("Ground", 0.5f));
+            S.Tiles(p, "Road", new Vector3(0, -0.05f, mid), new Vector3(HalfRoad * 2, 0.1f, len), S.M("Asphalt", 0.7f));
             float sw = SidewalkOuter - HalfRoad;
             foreach (float side in new[] { -1f, 1f })
-                S.Box(p, "Sidewalk", new Vector3(side * (HalfRoad + sw / 2f), 0.06f, mid), new Vector3(sw, 0.12f, len), S.M("Sidewalk", 1f));
+                S.Tiles(p, "Sidewalk", new Vector3(side * (HalfRoad + sw / 2f), 0.06f, mid), new Vector3(sw, 0.12f, len), S.M("Sidewalk", 1f));
 
             var paint = S.M("RoadPaint", 2f);
             for (float z = RoadStart + 2f; z < ShelterZ - 3f; z += 5f)
@@ -266,6 +299,92 @@ namespace Game.EditorTools
             Wall("Bound_Left", new Vector3(-SidewalkOuter - 0.3f, 3, mid), new Vector3(0.5f, 6, len));
             Wall("Bound_Right", new Vector3(SidewalkOuter + 0.3f, 3, mid), new Vector3(0.5f, 6, len));
             Wall("Bound_Back", new Vector3(0, 3, -16.8f), new Vector3(20, 6, 0.5f));
+        }
+
+        // ------------------------------------------------------------------ safe zones
+
+        /// <summary>Green shelters on the sidewalk: no hits inside, health refills. Alternating sides.</summary>
+        static readonly (float side, float z)[] SafeSpots = { (1f, 40f), (-1f, 85f), (1f, 125f), (-1f, 165f) };
+
+        /// <summary>Adds (or rebuilds) the safe zones in an already built Level 2 scene.</summary>
+        public static void AddSafeZones(UnityEngine.SceneManagement.Scene scene)
+        {
+            AssetDatabase.Refresh();
+            S.SetUpTextures();
+            S.Mats.Clear();
+
+            var old = GameObject.Find("SafeZones");
+            if (old != null) Object.DestroyImmediate(old);
+            var level = GameObject.Find("Level2");
+            var group = new GameObject("SafeZones").transform;
+            if (level != null) group.SetParent(level.transform, false);
+            BuildSafeZones(group);
+
+            // Hits a bit less brutal: 2 s of safety after a hit (scene value overrides the script default)
+            var manager = Object.FindAnyObjectByType<Level2Manager>();
+            if (manager != null)
+            {
+                var so = new SerializedObject(manager);
+                so.FindProperty("hitCooldown").floatValue = 2f;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log($"[Level2] {SafeSpots.Length} safe zones added to {scene.path}.");
+        }
+
+        static void BuildSafeZones(Transform p)
+        {
+            Material floor = S.M("SafeFloor", 1f), metal = S.M("PoleMetal", 1f),
+                     sign = SignMat("M_SafeSign_UV", $"{EnvTex}/T_SafeSign.png");
+            const float inner = HalfRoad + 0.6f, length = 5f; // zone: from 0.6 m into the sidewalk to its outer edge
+
+            for (int i = 0; i < SafeSpots.Length; i++)
+            {
+                var (side, z) = SafeSpots[i];
+                float cx = side * (inner + SidewalkOuter) / 2f, width = SidewalkOuter - inner;
+                var zone = S.Group(p, $"SafeZone_{i + 1}");
+
+                S.NoCollider(S.Box(zone, "GreenFloor", new Vector3(cx, 0.125f, z), new Vector3(width, 0.01f, length), floor));
+                // Bus-stop style shelter: back wall at the outer edge, roof, two front posts
+                S.Box(zone, "BackWall", new Vector3(side * (SidewalkOuter - 0.1f), 1.2f, z), new Vector3(0.1f, 2.3f, length), metal);
+                S.Box(zone, "Roof", new Vector3(cx, 2.4f, z), new Vector3(width + 0.2f, 0.1f, length + 0.2f), metal);
+                foreach (float dz in new[] { -length / 2f + 0.1f, length / 2f - 0.1f })
+                    S.Box(zone, "Post", new Vector3(side * (inner + 0.05f), 1.2f, z + dz), new Vector3(0.08f, 2.3f, 0.08f), metal);
+
+                // Sign standing ON the roof, facing the road (cube's -Z face turned towards the street).
+                // Above the roof the player inside can't see it, and a metal board behind it hides
+                // the mirrored back side.
+                var turn = Quaternion.Euler(0, side > 0 ? 90f : -90f, 0);
+                var signGo = S.NoCollider(S.Box(zone, "Sign_Bezopasno", new Vector3(side * (inner + 0.15f), 2.82f, z),
+                    new Vector3(2.4f, 0.6f, 0.03f), sign));
+                signGo.transform.rotation = turn;
+                var back = S.NoCollider(S.Box(zone, "Sign_Back", new Vector3(side * (inner + 0.19f), 2.82f, z),
+                    new Vector3(2.44f, 0.64f, 0.04f), metal));
+                back.transform.rotation = turn;
+                foreach (float dz in new[] { -0.9f, 0.9f })
+                    S.NoCollider(S.Box(zone, "Sign_Leg", new Vector3(side * (inner + 0.2f), 2.5f, z + dz),
+                        new Vector3(0.05f, 0.25f, 0.05f), metal));
+
+                var l = new GameObject("GreenLight").AddComponent<Light>();
+                l.transform.SetParent(zone, false);
+                l.transform.position = new Vector3(cx, 2.2f, z);
+                l.type = LightType.Point;
+                l.color = new Color(0.4f, 1f, 0.5f);
+                l.intensity = 2f;
+                l.range = 5f;
+
+                // The zone itself
+                var trigger = new GameObject("Zone");
+                trigger.transform.SetParent(zone, false);
+                trigger.transform.position = new Vector3(cx, 1.2f, z);
+                var box = trigger.AddComponent<BoxCollider>();
+                box.isTrigger = true;
+                box.size = new Vector3(width, 2.4f, length);
+                trigger.AddComponent<Rigidbody>().isKinematic = true;
+                trigger.AddComponent<SafeZone>();
+            }
         }
 
         // ------------------------------------------------------------------ Level 1 door
