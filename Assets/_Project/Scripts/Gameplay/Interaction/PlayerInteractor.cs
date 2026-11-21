@@ -59,8 +59,8 @@ namespace Game.Gameplay
         private static void AddToPlayers()
         {
             foreach (var p in FindObjectsByType<Game.Player.PlayerController>(FindObjectsInactive.Exclude))
-                if (p.GetComponent<PlayerInteractor>() == null)
-                    p.gameObject.AddComponent<PlayerInteractor>();
+                if (p.GetComponent<PlayerInteractor>() == null &&
+                    p.GetComponent<Game.Interaction.PlayerInteractor>() == null) ;
         }
 
         private void Awake()
