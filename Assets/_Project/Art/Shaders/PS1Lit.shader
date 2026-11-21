@@ -14,6 +14,8 @@ Shader "Game/PS1 Lit"
         _SnapResolution ("Vertex Snap (lower = more wobble)", Range(30, 480)) = 160
         _AffineAmount ("Texture Warp (affine)", Range(0, 1)) = 1
         _AmbientBoost ("Ambient Boost", Range(0, 2)) = 1
+        [Toggle(_TRIPLANAR)] _Triplanar ("Project Texture (model has no UVs)", Float) = 0
+        _TriplanarScale ("Projected Texture Tiles per Metre", Float) = 12
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 2
     }
 
@@ -33,6 +35,8 @@ Shader "Game/PS1 Lit"
             float _SnapResolution;
             float _AffineAmount;
             half _AmbientBoost;
+            float _Triplanar;
+            float _TriplanarScale;
             float _Cull;
         CBUFFER_END
 
@@ -64,6 +68,7 @@ Shader "Game/PS1 Lit"
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
+            #pragma shader_feature_local _TRIPLANAR
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
@@ -83,6 +88,8 @@ Shader "Game/PS1 Lit"
                 float3 positionWS : TEXCOORD2;
                 float3 normalWS : TEXCOORD3;
                 float fogFactor : TEXCOORD4;
+                float3 positionOS : TEXCOORD5; // scaled to metres, for projected textures
+                float3 normalOS : TEXCOORD6;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -101,6 +108,13 @@ Shader "Game/PS1 Lit"
                 o.uv = TRANSFORM_TEX(input.uv, _BaseMap);
                 o.uvAffine = float3(o.uv * positionCS.w, positionCS.w);
                 o.fogFactor = ComputeFogFactor(positionCS.z);
+
+                // Object space (moves and turns with the item), but in metres so all items get the same pixel size
+                float3 objectScale = float3(length(UNITY_MATRIX_M._m00_m10_m20),
+                                            length(UNITY_MATRIX_M._m01_m11_m21),
+                                            length(UNITY_MATRIX_M._m02_m12_m22));
+                o.positionOS = input.positionOS.xyz * objectScale;
+                o.normalOS = input.normalOS;
                 return o;
             }
 
@@ -114,7 +128,15 @@ Shader "Game/PS1 Lit"
             {
                 UNITY_SETUP_INSTANCE_ID(i);
 
+            #if defined(_TRIPLANAR)
+                // No UVs needed: project the texture along the axis the surface faces most
+                // (no blending between axes -> stays crisp like PS1 textures).
+                float3 an = abs(i.normalOS);
+                float3 p = i.positionOS * _TriplanarScale;
+                float2 uv = an.x > an.y && an.x > an.z ? p.zy : (an.y > an.z ? p.xz : p.xy);
+            #else
                 float2 uv = lerp(i.uv, i.uvAffine.xy / i.uvAffine.z, _AffineAmount);
+            #endif
                 half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_point_repeat, uv) * _BaseColor;
 
                 float3 n = normalize(i.normalWS);
