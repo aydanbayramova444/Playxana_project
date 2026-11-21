@@ -49,6 +49,34 @@ namespace Game.EditorTools
             SetUpScene(list, hudPrefab);
         }
 
+        /// <summary>
+        /// Same as above, but into the shared Main.unity: tracker, HUD, cart and shelves
+        /// (no loose test items — items come from the shelves).
+        /// </summary>
+        [MenuItem("Tools/Shopping List/Add To Main Scene", priority = 31)]
+        public static void AddToMainScene()
+        {
+            if (!EditorUtility.DisplayDialog("Add shopping list to Main",
+                    "This edits the shared Main.unity scene (tracker, HUD, cart, 4 shelves).\n" +
+                    "Tell your team before pushing it, so nobody else edits Main at the same time.",
+                    "Add to Main", "Cancel"))
+                return;
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            AddToMainSceneNoPrompt();
+        }
+
+        /// <summary>No dialogs — also for command line: Unity -batchmode -executeMethod
+        /// Game.EditorTools.ShoppingListSetupTool.AddToMainSceneNoPrompt -quit</summary>
+        public static void AddToMainSceneNoPrompt()
+        {
+            ShoppingListData list = CreateItemsAndList();
+            GameObject hudPrefab = CreateHudPrefab();
+            EditorSceneManager.OpenScene(MainScene);
+
+            SetUpScene(list, hudPrefab, allowMain: true, addTestItems: false);
+            ShelfSetupTool.BuildShelves(allowMain: true);
+        }
+
         // ---------- 1 + 2: data assets ----------
 
         static ShoppingListData CreateItemsAndList()
@@ -189,10 +217,11 @@ namespace Game.EditorTools
             return true;
         }
 
-        static void SetUpScene(ShoppingListData list, GameObject hudPrefab)
+        static void SetUpScene(ShoppingListData list, GameObject hudPrefab,
+                               bool allowMain = false, bool addTestItems = true)
         {
             var scene = EditorSceneManager.GetActiveScene();
-            if (scene.path == MainScene)
+            if (scene.path == MainScene && !allowMain)
             {
                 Debug.LogError("[ShoppingList] Refusing to edit Main.unity.");
                 return;
@@ -249,7 +278,7 @@ namespace Game.EditorTools
             }
 
             // Test items in a row to the right of the cart (+ one wrong item: orange)
-            if (GameObject.Find("ShoppingTestItems") == null)
+            if (addTestItems && GameObject.Find("ShoppingTestItems") == null)
             {
                 var group = new GameObject("ShoppingTestItems").transform;
                 string[] ids = { "banana", "banana", "soda", "apple", "bread", "orange" };

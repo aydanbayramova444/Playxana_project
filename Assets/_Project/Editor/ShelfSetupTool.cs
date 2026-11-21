@@ -27,10 +27,13 @@ namespace Game.EditorTools
         };
 
         [MenuItem("Tools/Shelves/Add Test Shelves (Current Dev Scene)", priority = 40)]
-        public static void AddTestShelves()
+        public static void AddTestShelves() => BuildShelves(allowMain: false);
+
+        /// <summary>Builds the shelves in the active scene. Main.unity only when allowMain is true.</summary>
+        public static void BuildShelves(bool allowMain)
         {
             var scene = EditorSceneManager.GetActiveScene();
-            if (scene.path == MainScene)
+            if (scene.path == MainScene && !allowMain)
             {
                 EditorUtility.DisplayDialog("Shelves", "This tool does not edit Main.unity.\n" +
                     "Open your dev scene (Scenes/Dev/<you>.unity) first.", "OK");
