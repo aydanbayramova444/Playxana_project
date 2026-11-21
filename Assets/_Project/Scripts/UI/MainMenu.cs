@@ -15,12 +15,12 @@ using UnityEditor.SceneManagement;
 namespace Game.UI
 {
     /// <summary>
-    /// Start screen of the game. The whole UI is built from code on Play — no sprites or prefabs needed:
-    ///   gradient background with slowly floating bubbles, big title, Play / How to Play / Quit,
-    ///   and a tilted "shopping list" card on the right.
+    /// Start screen of the game, built from code on Play:
+    ///   soft sky-blue → mint → pink background, big title, Play / How to Play / Quit on the left,
+    ///   and the shop-staff character on the right (gently floating, pointing at the buttons).
     ///
     /// Set up: Tools → Main Menu → Create Menu Scene
-    ///   (creates Scenes/MainMenu.unity and puts it FIRST in Build Profiles, before Main).
+    ///   (creates Scenes/MainMenu.unity, assigns Art/UI/MenuHero.png, puts the scene FIRST in Build Profiles).
     ///
     /// Play → loads <see cref="gameScene"/> and switches GameManager to Playing.
     /// Keyboard / gamepad work too (arrows + Enter, Esc closes "How to Play").
@@ -37,34 +37,23 @@ namespace Game.UI
         [Tooltip("Scene loaded by the Play button (must be in Build Profiles)")]
         [SerializeField] private string gameScene = "Main";
 
-        [Header("3D showcase (right side)")]
-        [Tooltip("Products that float in a slowly turning circle. Empty = no showcase.")]
-        [SerializeField] private GameObject[] showcaseItems;
-        [Tooltip("Biggest side of each product, in metres")]
-        [SerializeField] private float showcaseItemSize = 0.9f;
-        [SerializeField] private float showcaseRadius = 1.7f;
+        [Header("Character (right side)")]
+        [SerializeField] private Sprite heroImage;
 
         [Header("Colors")]
-        [SerializeField] private Color topColor = new Color(0.09f, 0.33f, 0.38f);
-        [SerializeField] private Color bottomColor = new Color(0.04f, 0.06f, 0.13f);
-        [SerializeField] private Color accent = new Color(1f, 0.73f, 0.22f);
+        [SerializeField] private Color skyColor = new Color(0.62f, 0.86f, 1.00f);   // light blue (top)
+        [SerializeField] private Color mintColor = new Color(0.70f, 0.95f, 0.82f);  // light green (middle)
+        [SerializeField] private Color pinkColor = new Color(1.00f, 0.80f, 0.88f);  // light pink (bottom)
+        [SerializeField] private Color inkColor = new Color(0.13f, 0.17f, 0.34f);   // text
+        [SerializeField] private Color buttonColor = new Color(1.00f, 0.42f, 0.62f); // main button / accents
 
-        private Sprite _round, _circle;
+        private Sprite _round;
         private CanvasGroup _mainGroup, _helpGroup;
-        private RectTransform _title;
-        private Vector2 _titlePos;
-        private Transform _carousel;
-        private readonly List<Transform> _spinners = new List<Transform>();
+        private RectTransform _title, _hero;
+        private Vector2 _titlePos, _heroPos;
         private GameObject _playButton, _helpBack;
         private InputAction _cancel;
         private bool _leaving;
-
-        private struct Bubble
-        {
-            public RectTransform Rt;
-            public float Speed, Sway, Phase, X;
-        }
-        private readonly List<Bubble> _bubbles = new List<Bubble>();
 
         // ---------- Unity ----------
 
@@ -75,7 +64,6 @@ namespace Game.UI
 
             EnsureCameraAndEventSystem();
             _round = MakeRoundedSprite(64, 26);
-            _circle = MakeRoundedSprite(64, 32);
             Build();
 
             Select(_playButton);
@@ -85,34 +73,13 @@ namespace Game.UI
         private void Update()
         {
             float t = Time.unscaledTime;
-            float dt = Time.unscaledDeltaTime;
 
-            // Gentle floating title.
+            // Gentle floating title and character.
             if (_title != null) _title.anchoredPosition = _titlePos + new Vector2(0, Mathf.Sin(t * 1.3f) * 6f);
-
-            // 3D showcase: the ring turns slowly, every product spins and bobs on its own.
-            if (_carousel != null)
+            if (_hero != null)
             {
-                _carousel.Rotate(0f, 18f * dt, 0f, Space.Self);
-                for (int i = 0; i < _spinners.Count; i++)
-                {
-                    Transform s = _spinners[i];
-                    s.Rotate(0f, 55f * dt, 0f, Space.Self);
-                    Vector3 p = s.localPosition;
-                    p.y = Mathf.Sin(t * 1.6f + i * 1.1f) * 0.12f;
-                    s.localPosition = p;
-                }
-            }
-
-            // Bubbles drift up and wrap around.
-            for (int i = 0; i < _bubbles.Count; i++)
-            {
-                Bubble b = _bubbles[i];
-                Vector2 p = b.Rt.anchoredPosition;
-                p.y += b.Speed * dt;
-                if (p.y > 1080 + b.Rt.sizeDelta.y) p.y = -b.Rt.sizeDelta.y;
-                p.x = b.X + Mathf.Sin(t * 0.5f + b.Phase) * b.Sway;
-                b.Rt.anchoredPosition = p;
+                _hero.anchoredPosition = _heroPos + new Vector2(0, Mathf.Sin(t * 1.1f) * 12f);
+                _hero.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(t * 0.8f) * 1.5f);
             }
 
             if (_cancel != null && _cancel.WasPressedThisFrame() && _helpGroup.blocksRaycasts)
@@ -165,55 +132,19 @@ namespace Game.UI
         {
             var canvasGo = new GameObject("MenuCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             canvasGo.transform.SetParent(transform, false);
-            // Screen Space - Camera, far from the camera: 3D products closer than the UI plane
-            // are drawn IN FRONT of the background but the UI stays sharp.
-            var canvas = canvasGo.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceCamera;
-            canvas.worldCamera = Camera.main;
-            canvas.planeDistance = 20f;
+            canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
             var scaler = canvasGo.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight = 0.5f;
             Transform root = canvasGo.transform;
 
-            // Background gradient
+            // Background: pink (bottom) → mint → sky blue (top)
             var bg = Rect("Background", root);
             Stretch(bg);
             var raw = bg.gameObject.AddComponent<RawImage>();
-            raw.texture = MakeGradient(bottomColor, topColor);
+            raw.texture = MakeGradient(pinkColor, mintColor, skyColor);
             raw.raycastTarget = false;
-
-            // Bubbles (behind everything else)
-            var bubbles = Rect("Bubbles", root);
-            Stretch(bubbles);
-            for (int i = 0; i < 16; i++)
-            {
-                float size = Random.Range(40f, 230f);
-                var rt = Rect("Bubble", bubbles);
-                Place(rt, Vector2.zero, new Vector2(0.5f, 0.5f), new Vector2(0, Random.Range(0f, 1080f)), Vector2.one * size);
-                var img = rt.gameObject.AddComponent<Image>();
-                img.sprite = _circle;
-                img.raycastTarget = false;
-                Color c = i % 3 == 0 ? accent : Color.white;
-                c.a = Random.Range(0.04f, 0.11f);
-                img.color = c;
-                _bubbles.Add(new Bubble
-                {
-                    Rt = rt, X = Random.Range(0f, 1920f), Speed = Random.Range(12f, 38f),
-                    Sway = Random.Range(10f, 40f), Phase = Random.Range(0f, 6.28f)
-                });
-            }
-
-            // Soft glow on the right, behind the 3D products
-            if (showcaseItems != null && showcaseItems.Length > 0)
-            {
-                var glow = Rect("Glow", root);
-                Place(glow, new Vector2(1, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-520, 0), new Vector2(900, 900));
-                var glowImg = glow.gameObject.AddComponent<RawImage>();
-                glowImg.texture = MakeRadialGlow(new Color(accent.r, accent.g, accent.b, 0.30f));
-                glowImg.raycastTarget = false;
-            }
 
             // ----- Main group (everything that fades in/out together) -----
             var main = Rect("Main", root);
@@ -221,21 +152,23 @@ namespace Game.UI
             _mainGroup = main.gameObject.AddComponent<CanvasGroup>();
             _mainGroup.alpha = 0f;
 
+            BuildHero(main);
+
             var content = Rect("Content", main);
             Place(content, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(160, 0), new Vector2(900, 820));
 
-            var small = Text(content, "SmallTitle", smallTitle, 40, accent, FontStyles.Bold);
+            var small = Text(content, "SmallTitle", smallTitle, 40, buttonColor, FontStyles.Bold);
             small.characterSpacing = 30;
             TopLeft(small.rectTransform, 0, new Vector2(900, 60));
 
-            // Big title with a soft shadow behind it
+            // Big title with a soft white "sticker" shadow
             _title = Rect("Title", content);
             TopLeft(_title, -45, new Vector2(900, 230));
             _titlePos = _title.anchoredPosition;
-            var shadow = Text(_title, "Shadow", bigTitle, 210, new Color(0, 0, 0, 0.35f), FontStyles.Bold);
+            var shadow = Text(_title, "Shadow", bigTitle, 210, new Color(1, 1, 1, 0.85f), FontStyles.Bold);
             Stretch(shadow.rectTransform);
-            shadow.rectTransform.anchoredPosition = new Vector2(8, -10);
-            var big = Text(_title, "Text", bigTitle, 210, Color.white, FontStyles.Bold);
+            shadow.rectTransform.anchoredPosition = new Vector2(7, -9);
+            var big = Text(_title, "Text", bigTitle, 210, inkColor, FontStyles.Bold);
             Stretch(big.rectTransform);
 
             var bar = Rect("AccentBar", content);
@@ -244,9 +177,9 @@ namespace Game.UI
             barImg.sprite = _round;
             barImg.type = Image.Type.Sliced;
             barImg.pixelsPerUnitMultiplier = 4f;
-            barImg.color = accent;
+            barImg.color = buttonColor;
 
-            var tag = Text(content, "Tagline", tagline, 34, new Color(1, 1, 1, 0.78f));
+            var tag = Text(content, "Tagline", tagline, 34, WithAlpha(inkColor, 0.8f));
             tag.lineSpacing = 8;
             TopLeft(tag.rectTransform, -325, new Vector2(800, 120));
 
@@ -254,102 +187,38 @@ namespace Game.UI
             MakeButton(content, "HOW TO PLAY", -600, primary: false, () => ShowHelp(true));
             MakeButton(content, "QUIT", -710, primary: false, OnQuit);
 
-            BuildShowcase();
-
-            var foot = Text(main, "Footer", footer, 22, new Color(1, 1, 1, 0.4f));
+            var foot = Text(main, "Footer", footer, 22, WithAlpha(inkColor, 0.5f));
             foot.characterSpacing = 8;
             Place(foot.rectTransform, Vector2.zero, Vector2.zero, new Vector2(160, 48), new Vector2(800, 40));
-
-            var hint = Text(main, "Hint", "Mouse  or  Arrows + Enter", 22, new Color(1, 1, 1, 0.4f), FontStyles.Normal,
-                TextAlignmentOptions.BottomRight);
-            Place(hint.rectTransform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-80, 48), new Vector2(600, 40));
 
             BuildHelp(root);
         }
 
-        /// <summary>
-        /// 3D products floating in a slowly turning ring on the right side of the screen.
-        /// Only the meshes are copied from the prefabs — no physics, no scripts, nothing to pick up.
-        /// </summary>
-        private void BuildShowcase()
+        /// <summary>The shop-staff character on the right, with a soft white glow behind her.</summary>
+        private void BuildHero(Transform parent)
         {
-            Camera cam = Camera.main;
-            if (cam == null || showcaseItems == null || showcaseItems.Length == 0) return;
+            if (heroImage == null) return;
 
-            // Light so the products are not black in an empty scene.
-            if (FindAnyObjectByType<Light>() == null)
-            {
-                var light = new GameObject("MenuLight", typeof(Light)).GetComponent<Light>();
-                light.type = LightType.Directional;
-                light.intensity = 1.3f;
-                light.transform.rotation = Quaternion.Euler(35f, -40f, 0f);
-            }
-            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = Color.Lerp(topColor, Color.white, 0.55f);
+            var glow = Rect("HeroGlow", parent);
+            Place(glow, new Vector2(1, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-500, 20), new Vector2(950, 950));
+            var glowImg = glow.gameObject.AddComponent<RawImage>();
+            glowImg.texture = MakeRadialGlow(new Color(1, 1, 1, 0.75f));
+            glowImg.raycastTarget = false;
 
-            // Centre of the ring: right side of the screen, 7 m in front of the camera.
-            _carousel = new GameObject("Showcase").transform;
-            _carousel.position = cam.ViewportToWorldPoint(new Vector3(0.73f, 0.47f, 7f));
-            _carousel.rotation = cam.transform.rotation * Quaternion.Euler(-14f, 0f, 0f); // tilt: see the ring from a bit above
+            _hero = Rect("Hero", parent);
+            // Stands on the bottom edge, right side; 92% of the screen height.
+            _hero.anchorMin = _hero.anchorMax = new Vector2(1, 0);
+            _hero.pivot = new Vector2(0.5f, 0);
+            float h = 1080 * 0.92f;
+            float w = h * heroImage.rect.width / heroImage.rect.height;
+            _hero.sizeDelta = new Vector2(w, h);
+            _hero.anchoredPosition = new Vector2(-500, 0);
+            _heroPos = _hero.anchoredPosition;
 
-            int count = showcaseItems.Length;
-            for (int i = 0; i < count; i++)
-            {
-                if (showcaseItems[i] == null) continue;
-
-                float angle = i * Mathf.PI * 2f / count;
-                var holder = new GameObject(showcaseItems[i].name).transform;
-                holder.SetParent(_carousel, false);
-                holder.localPosition = new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * showcaseRadius;
-                holder.localRotation = Quaternion.Euler(14f, 0f, 0f);             // undo the ring tilt: products stand upright
-                holder.Rotate(0f, Random.Range(0f, 360f), 0f, Space.Self);       // each starts facing a different way
-
-                Transform model = CopyMeshes(showcaseItems[i], holder);
-                FitToSize(model, showcaseItemSize);
-                _spinners.Add(holder);
-            }
-        }
-
-        /// <summary>Copies every MeshFilter + MeshRenderer of the prefab (keeping their layout) under `parent`.</summary>
-        private static Transform CopyMeshes(GameObject prefab, Transform parent)
-        {
-            var model = new GameObject("Model").transform;
-            model.SetParent(parent, false);
-            Matrix4x4 toRoot = prefab.transform.worldToLocalMatrix;
-
-            foreach (MeshFilter mf in prefab.GetComponentsInChildren<MeshFilter>(true))
-            {
-                var mr = mf.GetComponent<MeshRenderer>();
-                if (mf.sharedMesh == null || mr == null) continue;
-
-                Matrix4x4 m = toRoot * mf.transform.localToWorldMatrix;
-                var part = new GameObject(mf.name, typeof(MeshFilter), typeof(MeshRenderer));
-                part.transform.SetParent(model, false);
-                part.transform.localPosition = m.GetColumn(3);
-                part.transform.localRotation = m.rotation;
-                part.transform.localScale = m.lossyScale;
-                part.GetComponent<MeshFilter>().sharedMesh = mf.sharedMesh;
-                part.GetComponent<MeshRenderer>().sharedMaterials = mr.sharedMaterials;
-            }
-            return model;
-        }
-
-        /// <summary>Scales the model so its biggest side is `size` metres and centres it on its parent.</summary>
-        private static void FitToSize(Transform model, float size)
-        {
-            var renderers = model.GetComponentsInChildren<Renderer>();
-            if (renderers.Length == 0) return;
-
-            Bounds b = renderers[0].bounds;
-            foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
-            float biggest = Mathf.Max(b.size.x, b.size.y, b.size.z);
-            if (biggest < 0.0001f) return;
-
-            model.localScale *= size / biggest;
-
-            b = renderers[0].bounds;
-            foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
-            model.position -= b.center - model.parent.position;
+            var img = _hero.gameObject.AddComponent<Image>();
+            img.sprite = heroImage;
+            img.preserveAspect = true;
+            img.raycastTarget = false;
         }
 
         private void BuildHelp(Transform root)
@@ -362,26 +231,26 @@ namespace Game.UI
             _helpGroup.blocksRaycasts = false;
 
             var dim = help.gameObject.AddComponent<Image>();
-            dim.color = new Color(0, 0, 0, 0.65f);
+            dim.color = WithAlpha(inkColor, 0.45f);
 
             var card = Rect("Card", help);
             Place(card, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(980, 680));
-            Panel(card, Color.Lerp(bottomColor, topColor, 0.35f));
+            Panel(card, Color.white);
 
-            var title = Text(card, "Title", "HOW TO PLAY", 56, accent, FontStyles.Bold, TextAlignmentOptions.Center);
+            var title = Text(card, "Title", "HOW TO PLAY", 56, buttonColor, FontStyles.Bold, TextAlignmentOptions.Center);
             title.characterSpacing = 14;
             Place(title.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -50), new Vector2(900, 80));
 
-            string a = "#FFD27A";
+            string k = "#" + ColorUtility.ToHtmlStringRGB(buttonColor);
             string body =
                 "Collect everything on your shopping list and put it in the cart before time runs out. " +
                 "Shelves have limited stock — other shoppers want the same things!\n\n" +
-                $"<color={a}><b>WASD</b></color><pos=26%>Move\n" +
-                $"<color={a}><b>Shift</b></color><pos=26%>Run\n" +
-                $"<color={a}><b>Space</b></color><pos=26%>Jump\n" +
-                $"<color={a}><b>E</b></color><pos=26%>Pick up / put in the cart\n" +
-                $"<color={a}><b>Esc</b></color><pos=26%>Pause";
-            var text = Text(card, "Body", body, 32, new Color(1, 1, 1, 0.9f));
+                $"<color={k}><b>WASD</b></color><pos=26%>Move\n" +
+                $"<color={k}><b>Shift</b></color><pos=26%>Run\n" +
+                $"<color={k}><b>Space</b></color><pos=26%>Jump\n" +
+                $"<color={k}><b>E</b></color><pos=26%>Pick up / put in the cart\n" +
+                $"<color={k}><b>Esc</b></color><pos=26%>Pause";
+            var text = Text(card, "Body", body, 32, inkColor);
             text.lineSpacing = 12;
             text.richText = true;
             Place(text.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -160), new Vector2(820, 380));
@@ -405,8 +274,8 @@ namespace Game.UI
             img.type = Image.Type.Sliced;
             img.pixelsPerUnitMultiplier = 0.55f; // round ends
 
-            Color normal = primary ? accent : new Color(1, 1, 1, 0.10f);
-            Color hover = primary ? Color.Lerp(accent, Color.white, 0.25f) : new Color(1, 1, 1, 0.22f);
+            Color normal = primary ? buttonColor : new Color(1, 1, 1, 0.70f);
+            Color hover = primary ? Color.Lerp(buttonColor, Color.white, 0.2f) : Color.white;
             img.color = normal;
 
             var button = rt.gameObject.AddComponent<Button>();
@@ -418,7 +287,7 @@ namespace Game.UI
             fx.Normal = normal;
             fx.Hover = hover;
 
-            var text = Text(rt, "Label", label, 34, primary ? bottomColor : Color.white, FontStyles.Bold,
+            var text = Text(rt, "Label", label, 34, primary ? Color.white : inkColor, FontStyles.Bold,
                 TextAlignmentOptions.Center);
             text.characterSpacing = 10;
             Stretch(text.rectTransform);
@@ -434,13 +303,19 @@ namespace Game.UI
                 var cam = new GameObject("Main Camera", typeof(Camera)).GetComponent<Camera>();
                 cam.tag = "MainCamera";
                 cam.clearFlags = CameraClearFlags.SolidColor;
-                cam.backgroundColor = bottomColor;
+                cam.backgroundColor = mintColor;
             }
             if (EventSystem.current == null && FindAnyObjectByType<EventSystem>() == null)
             {
                 var es = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
                 es.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
             }
+        }
+
+        private static Color WithAlpha(Color c, float a)
+        {
+            c.a = a;
+            return c;
         }
 
         private static void Select(GameObject go)
@@ -508,11 +383,18 @@ namespace Game.UI
         private static void TopLeft(RectTransform rt, float top, Vector2 size) =>
             Place(rt, new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, top), size);
 
-        private static Texture2D MakeGradient(Color bottom, Color top)
+        /// <summary>Vertical 3-colour gradient: bottom → middle → top.</summary>
+        private static Texture2D MakeGradient(Color bottom, Color middle, Color top)
         {
             var tex = new Texture2D(1, 256, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
             for (int y = 0; y < 256; y++)
-                tex.SetPixel(0, y, Color.Lerp(bottom, top, Mathf.SmoothStep(0, 1, y / 255f)));
+            {
+                float v = y / 255f;
+                Color c = v < 0.5f
+                    ? Color.Lerp(bottom, middle, Mathf.SmoothStep(0, 1, v * 2f))
+                    : Color.Lerp(middle, top, Mathf.SmoothStep(0, 1, (v - 0.5f) * 2f));
+                tex.SetPixel(0, y, c);
+            }
             tex.Apply();
             return tex;
         }
@@ -585,8 +467,7 @@ namespace Game.UI
         // ---------- Editor: create the scene ----------
 #if UNITY_EDITOR
         private const string MenuScenePath = "Assets/_Project/Scenes/MainMenu.unity";
-        private static readonly string[] ShowcaseIds =
-            { "banana", "soda", "apple", "donut", "bread", "cupcake", "orange", "chocolate" };
+        private const string HeroImagePath = "Assets/_Project/Art/UI/MenuHero.png";
 
         [MenuItem("Tools/Main Menu/Create Menu Scene", priority = 50)]
         private static void CreateMenuScene()
@@ -605,7 +486,7 @@ namespace Game.UI
                 cam.tag = "MainCamera";
                 var camera = cam.GetComponent<Camera>();
                 camera.clearFlags = CameraClearFlags.SolidColor;
-                camera.backgroundColor = new Color(0.04f, 0.06f, 0.13f);
+                camera.backgroundColor = new Color(0.70f, 0.95f, 0.82f);
 
                 var es = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
                 es.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
@@ -614,20 +495,22 @@ namespace Game.UI
                 EditorSceneManager.SaveScene(scene, MenuScenePath);
             }
 
-            // Fill the 3D showcase with the team's pickup prefabs (re-done every run).
+            // The character picture must be imported as a Sprite.
+            if (AssetImporter.GetAtPath(HeroImagePath) is TextureImporter importer &&
+                importer.textureType != TextureImporterType.Sprite)
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.alphaIsTransparency = true;
+                importer.mipmapEnabled = false;
+                importer.SaveAndReimport();
+            }
+
             var menu = FindAnyObjectByType<MainMenu>();
             if (menu != null)
             {
-                var found = new List<GameObject>();
-                foreach (string id in ShowcaseIds)
-                {
-                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Project/Prefabs/Pickups/Pickup_{id}.prefab");
-                    if (prefab != null) found.Add(prefab);
-                }
                 var so = new SerializedObject(menu);
-                var prop = so.FindProperty("showcaseItems");
-                prop.arraySize = found.Count;
-                for (int i = 0; i < found.Count; i++) prop.GetArrayElementAtIndex(i).objectReferenceValue = found[i];
+                so.FindProperty("heroImage").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>(HeroImagePath);
                 so.ApplyModifiedPropertiesWithoutUndo();
                 EditorSceneManager.MarkSceneDirty(menu.gameObject.scene);
                 EditorSceneManager.SaveScene(menu.gameObject.scene);
