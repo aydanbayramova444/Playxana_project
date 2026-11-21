@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using Game.Core;
+using Game.Interaction;
 using TMPro;
 using UnityEngine;
 
@@ -9,21 +9,27 @@ namespace Game.Gameplay
     /// A shop shelf with LIMITED stock of one item.
     ///
     /// On Play it builds itself from code: a base, two side walls, a back panel and
-    /// a few wooden boards (levels). Then it puts `stock` copies of item.prefab on the
-    /// boards, front row, bottom level first.
+    /// a few wooden boards (levels), with `itemsPerBoard` spots on each board.
+    /// Then it puts `stock` copies of item.prefab on the spots, bottom board first.
+    ///
+    /// The spots are an <see cref="ItemSlot"/>: the player can take products off AND put
+    /// products back on (E while holding one). No Item = an empty shelf that takes anything.
     ///
     /// The FRONT of the shelf is transform.forward (blue arrow) — turn it to face the aisle.
     /// The object's position is the middle of the shelf, on the floor.
     ///
-    /// Player picks an item (GameEvents.ItemPickedUp) → stock goes down.
     /// NPC shoppers call <see cref="TakeOne"/>.
     /// </summary>
     public class Shelf : MonoBehaviour
     {
+        [Tooltip("What this shelf sells. Empty = empty shelf, the player can put anything on it.")]
         [SerializeField] private ItemData item;
 
-        [Tooltip("How many items the shelf starts with")]
+        [Tooltip("How many items the shelf starts with (max = levels x items per board)")]
         [Min(0)] [SerializeField] private int stock = 6;
+
+        [Tooltip("Spots on each board where a product stands")]
+        [Min(1)] [SerializeField] private int itemsPerBoard = 4;
 
         [Header("Size (metres)")]
         [SerializeField] private float width = 1.6f;
@@ -39,41 +45,36 @@ namespace Game.Gameplay
         const float Thick = 0.04f;    // panels and boards
         const float BaseHeight = 0.12f;
 
-        private readonly List<GameObject> _items = new List<GameObject>();
+        private ItemSlot _slot;
         private TextMeshPro _label;
 
         // ---------- Public API (for NPCs, UI ...) ----------
 
         public ItemData Item => item;
         public string ItemId => item != null ? item.id : "";
-        public int Stock => _items.Count;
-        public bool IsEmpty => _items.Count == 0;
+        public int Stock => _slot != null ? _slot.Count : 0;
+        public int Capacity => levels * itemsPerBoard;
+        public bool IsEmpty => Stock == 0;
 
         /// <summary>NPC takes one item: it disappears from the shelf. False if empty.</summary>
         public bool TakeOne()
         {
-            if (IsEmpty) return false;
-
-            int last = _items.Count - 1;
-            GameObject taken = _items[last];
-            _items.RemoveAt(last);
-            if (taken != null) Destroy(taken);
-
-            OnStockChanged();
+            Game.Interaction.Pickup taken = _slot != null ? _slot.TakeLast() : null; // raises ItemRemoved -> label
+            if (taken == null) return false;
+            Destroy(taken.gameObject);
             return true;
         }
 
         // ---------- Unity ----------
 
-        private void OnEnable() => GameEvents.ItemPickedUp += OnItemPickedUp;
-
-        private void OnDisable() => GameEvents.ItemPickedUp -= OnItemPickedUp;
-
         private void Start()
         {
             BuildFrame();
+            BuildSlot();
             if (showLabel) _label = CreateLabel();
             SpawnItems();
+            _slot.ItemPlaced += (_, __) => OnStockChanged();
+            _slot.ItemRemoved += (_, __) => OnStockChanged();
             UpdateLabel();
         }
 
@@ -141,6 +142,8 @@ namespace Game.Gameplay
         {
             var temp = GameObject.CreatePrimitive(PrimitiveType.Cube);
             var mat = new Material(temp.GetComponent<Renderer>().sharedMaterial) { color = color };
+            Shader ps1 = Shader.Find("Game/PS1 Lit"); // same wobbly PS1 look as the rest of the store
+            if (ps1 != null) mat.shader = ps1;
             if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
             Destroy(temp);
             return mat;
@@ -148,41 +151,57 @@ namespace Game.Gameplay
 
         // ---------- Items ----------
 
-        /// <summary>Fills the boards from the bottom, items in a row near the front edge.</summary>
-        private void SpawnItems()
+        /// <summary>
+        /// One spot per product: itemsPerBoard in a row near the front edge of every board.
+        /// Spot order = bottom board first, left to right (that is also the fill order).
+        /// </summary>
+        private void BuildSlot()
         {
-            if (item == null || item.prefab == null)
-            {
-                Debug.LogWarning($"[Shelf] '{name}' has no ItemData / prefab.", this);
-                return;
-            }
-            if (item.prefab.GetComponent<Pickup>() == null)
-                Debug.LogWarning($"[Shelf] Prefab of '{item.id}' has no Pickup — the player can't take it. " +
-                                 "Use Prefabs/Pickups/Pickup_*.prefab.", this);
+            var spotsRoot = new GameObject("Spots").transform;
+            spotsRoot.SetParent(transform, false);
 
-            int perLevel = Mathf.CeilToInt(stock / (float)levels);
             float usable = width - 4 * Thick;
             float frontZ = depth * 0.15f; // a bit in front of the middle: easy to see and reach
+            var spots = new Transform[Capacity];
 
-            for (int i = 0; i < stock; i++)
+            for (int level = 0; level < levels; level++)
+            for (int s = 0; s < itemsPerBoard; s++)
             {
-                int level = i / perLevel;
-                int slot = i % perLevel;
-                int onThisLevel = Mathf.Min(perLevel, stock - level * perLevel);
-
-                float x = onThisLevel > 1 ? -usable / 2f + usable * (slot + 0.5f) / onThisLevel : 0f;
-                Vector3 local = new Vector3(x, BoardTop(level), frontZ);
-
-                GameObject go = Instantiate(item.prefab, transform.TransformPoint(local), transform.rotation);
-                go.name = $"{item.id}_{i}";
-                if (go.TryGetComponent(out Rigidbody rb)) rb.isKinematic = true; // stays put until picked up
-                _items.Add(go);
+                float x = itemsPerBoard > 1 ? -usable / 2f + usable * (s + 0.5f) / itemsPerBoard : 0f;
+                var spot = new GameObject($"Spot_{level}_{s}").transform;
+                spot.SetParent(spotsRoot, false);
+                spot.localPosition = new Vector3(x, BoardTop(level), frontZ);
+                spots[level * itemsPerBoard + s] = spot;
             }
+
+            _slot = gameObject.AddComponent<ItemSlot>();
+            string shelfName = item != null ? $"{item.displayName} shelf" : "Shelf";
+            _slot.Setup(shelfName, "Put on shelf:", "shelf", ItemId, spots, lockItems: false);
         }
 
-        private void OnItemPickedUp(GameObject picked, string itemId)
+        /// <summary>Puts `stock` copies of the product on the spots.</summary>
+        private void SpawnItems()
         {
-            if (_items.Remove(picked)) OnStockChanged();
+            if (item == null) return; // empty shelf: the player fills it
+            if (item.prefab == null)
+            {
+                Debug.LogWarning($"[Shelf] '{name}': ItemData '{item.id}' has no prefab.", this);
+                return;
+            }
+            if (item.prefab.GetComponent<Game.Interaction.Pickup>() == null)
+            {
+                Debug.LogWarning($"[Shelf] Prefab of '{item.id}' has no Game.Interaction.Pickup - " +
+                                 "the player can't take it. Use Prefabs/Pickups/Pickup_*.prefab.", this);
+                return;
+            }
+
+            int count = Mathf.Min(stock, Capacity);
+            for (int i = 0; i < count; i++)
+            {
+                GameObject go = Instantiate(item.prefab);
+                go.name = $"{item.id}_{i}";
+                _slot.Place(go.GetComponent<Game.Interaction.Pickup>()); // snaps onto the next free spot, stays put
+            }
         }
 
         private void OnStockChanged()
@@ -211,8 +230,13 @@ namespace Game.Gameplay
         private void UpdateLabel()
         {
             if (_label == null) return;
-            string itemName = item != null ? item.displayName : "?";
-            _label.text = IsEmpty ? $"{itemName}\n<color=#FF5555>SOLD OUT</color>" : $"{itemName} x{Stock}";
+            if (item == null)
+            {
+                _label.text = $"Shelf {Stock}/{Capacity}";
+                return;
+            }
+            _label.text = IsEmpty ? $"{item.displayName}\n<color=#FF5555>SOLD OUT</color>"
+                                  : $"{item.displayName} x{Stock}";
         }
 
         // ---------- Editor preview ----------

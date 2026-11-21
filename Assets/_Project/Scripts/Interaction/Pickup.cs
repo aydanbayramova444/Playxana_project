@@ -41,9 +41,12 @@ namespace Game.Interaction
             if (_rigidbody == null)
             {
                 _rigidbody = gameObject.AddComponent<Rigidbody>();
-                _rigidbody.interpolation = RigidbodyInterpolation.None;
                 _rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             }
+
+            // Interpolation makes a held item lag at its old spot (looks like it vanished),
+            // so it's off for every pickup, also ones that came with their own Rigidbody.
+            _rigidbody.interpolation = RigidbodyInterpolation.None;
         }
 
         private void AddFittingBoxCollider()

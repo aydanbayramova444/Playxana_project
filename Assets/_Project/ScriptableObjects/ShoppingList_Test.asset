@@ -21,3 +21,11 @@ MonoBehaviour:
     amount: 1
   - item: {fileID: 11400000, guid: 242b1bb714efd48faa6108f5bf737a08, type: 2}
     amount: 1
+  - item: {fileID: 11400000, guid: 9a1836e74f6ada0448d186da6df9e307, type: 2}
+    amount: 1
+  - item: {fileID: 11400000, guid: 7f5bb63f20a4cfd46947548d81990cdd, type: 2}
+    amount: 1
+  - item: {fileID: 11400000, guid: b4efd4a58299ffd49a6b26ef56f0b47e, type: 2}
+    amount: 1
+  - item: {fileID: 11400000, guid: 82469e9f6845c834b80363b0aeabf8d9, type: 2}
+    amount: 1

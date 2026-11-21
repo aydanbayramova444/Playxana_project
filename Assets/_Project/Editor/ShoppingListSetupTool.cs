@@ -49,6 +49,34 @@ namespace Game.EditorTools
             SetUpScene(list, hudPrefab);
         }
 
+        /// <summary>
+        /// Same as above, but into the shared Main.unity: tracker, HUD, cart and shelves
+        /// (no loose test items — items come from the shelves).
+        /// </summary>
+        [MenuItem("Tools/Shopping List/Add To Main Scene", priority = 31)]
+        public static void AddToMainScene()
+        {
+            if (!EditorUtility.DisplayDialog("Add shopping list to Main",
+                    "This edits the shared Main.unity scene (tracker, HUD, cart, 4 shelves).\n" +
+                    "Tell your team before pushing it, so nobody else edits Main at the same time.",
+                    "Add to Main", "Cancel"))
+                return;
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            AddToMainSceneNoPrompt();
+        }
+
+        /// <summary>No dialogs — also for command line: Unity -batchmode -executeMethod
+        /// Game.EditorTools.ShoppingListSetupTool.AddToMainSceneNoPrompt -quit</summary>
+        public static void AddToMainSceneNoPrompt()
+        {
+            ShoppingListData list = CreateItemsAndList();
+            GameObject hudPrefab = CreateHudPrefab();
+            EditorSceneManager.OpenScene(MainScene);
+
+            SetUpScene(list, hudPrefab, allowMain: true, addTestItems: false);
+            ShelfSetupTool.BuildShelves(allowMain: true);
+        }
+
         // ---------- 1 + 2: data assets ----------
 
         static ShoppingListData CreateItemsAndList()
@@ -189,10 +217,11 @@ namespace Game.EditorTools
             return true;
         }
 
-        static void SetUpScene(ShoppingListData list, GameObject hudPrefab)
+        static void SetUpScene(ShoppingListData list, GameObject hudPrefab,
+                               bool allowMain = false, bool addTestItems = true)
         {
             var scene = EditorSceneManager.GetActiveScene();
-            if (scene.path == MainScene)
+            if (scene.path == MainScene && !allowMain)
             {
                 Debug.LogError("[ShoppingList] Refusing to edit Main.unity.");
                 return;
@@ -224,32 +253,31 @@ namespace Game.EditorTools
             EditorUtility.SetDirty(hud);
             PrefabUtility.RecordPrefabInstancePropertyModifications(hud);
 
-            // Player: needs PlayerInteractor to pick things up (added in THIS scene only)
+            // Player position: test items and the cart go in front of it
             var player = Object.FindAnyObjectByType<PlayerController>();
             Vector3 origin = player != null ? player.transform.position : Vector3.zero;
             Vector3 fwd = player != null ? player.transform.forward : Vector3.forward;
             Vector3 right = player != null ? player.transform.right : Vector3.right;
-            if (player != null && player.GetComponent<PlayerInteractor>() == null)
-                player.gameObject.AddComponent<PlayerInteractor>();
+            // The Player prefab already has Game.Interaction.PlayerInteractor — nothing to add.
 
-            // Cart: a cube with ItemReceiver "cart" that eats items
+            // Cart: a cube with an ItemSlot "cart" that eats items (the shopping list counts them)
             if (GameObject.Find("Cart") == null)
             {
                 var cart = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cart.name = "Cart";
                 cart.transform.position = origin + fwd * 3f + Vector3.up * 0.4f;
                 cart.transform.localScale = new Vector3(1f, 0.8f, 0.6f);
-                var receiver = cart.AddComponent<ItemReceiver>();
-                var rso = new SerializedObject(receiver);
-                rso.FindProperty("receiverId").stringValue = "cart";
+                var slot = cart.AddComponent<Game.Interaction.ItemSlot>();
+                var rso = new SerializedObject(slot);
+                rso.FindProperty("slotId").stringValue = "cart";
                 rso.FindProperty("displayName").stringValue = "Cart";
-                rso.FindProperty("promptFormat").stringValue = "Put {item} in {target}";
+                rso.FindProperty("prompt").stringValue = "Put in cart:";
                 rso.FindProperty("consumeItems").boolValue = true;
                 rso.ApplyModifiedPropertiesWithoutUndo();
             }
 
             // Test items in a row to the right of the cart (+ one wrong item: orange)
-            if (GameObject.Find("ShoppingTestItems") == null)
+            if (addTestItems && GameObject.Find("ShoppingTestItems") == null)
             {
                 var group = new GameObject("ShoppingTestItems").transform;
                 string[] ids = { "banana", "banana", "soda", "apple", "bread", "orange" };

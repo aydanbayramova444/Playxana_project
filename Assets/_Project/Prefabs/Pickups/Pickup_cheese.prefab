@@ -202,7 +202,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 1
+  m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 2
 --- !u!114 &8527465219252409323
@@ -214,8 +214,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 7657411109154519296}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c958616ae41c424cba0af3ab7841dd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 0156cf3d867342b1acfb4bdc5ce53adf, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Pickup
-  itemId: cheese
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Interaction.Pickup
   displayName: Cheese
+  prompt: Use
+  holdDuration: 0
+  requiredHeldItem: 
+  consumeHeldItem: 0
+  singleUse: 0
+  onInteract:
+    m_PersistentCalls:
+      m_Calls: []
+  itemId: cheese
