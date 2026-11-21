@@ -140,6 +140,39 @@ namespace Game.Interaction
             return true;
         }
 
+        /// <summary>
+        /// Sets everything from code (shelves build their spots on Play).
+        /// Call before anything is placed.
+        /// </summary>
+        public void Setup(string newDisplayName, string newPrompt, string newSlotId, string newAcceptsItemId,
+                          Transform[] newPoints, bool lockItems)
+        {
+            displayName = newDisplayName;
+            prompt = newPrompt;
+            slotId = newSlotId;
+            acceptsItemId = newAcceptsItemId ?? "";
+            points = newPoints ?? Array.Empty<Transform>();
+            lockPlacedItems = lockItems;
+            consumeItems = false;
+            _occupants = null;
+        }
+
+        /// <summary>Takes the last placed item out of the slot (e.g. an NPC grabs one). Null if empty.</summary>
+        public Pickup TakeLast()
+        {
+            for (int i = Occupants.Length - 1; i >= 0; i--)
+            {
+                var item = Occupants[i];
+                if (item == null) continue;
+
+                Occupants[i] = null;
+                item.CurrentSlot = null;
+                ItemRemoved?.Invoke(this, item);
+                return item;
+            }
+            return null;
+        }
+
         internal void Remove(Pickup item)
         {
             int index = Array.IndexOf(Occupants, item);

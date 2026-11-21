@@ -153,8 +153,14 @@ namespace Game.Interaction
                 // First enabled interactable on this object or its parents
                 // (e.g. a locked bottle on a shelf → the shelf)
                 col.GetComponentsInParent(false, _found);
+                Interactable firstEnabled = null;
                 foreach (var it in _found)
-                    if (it.isActiveAndEnabled) return it;
+                {
+                    if (!it.isActiveAndEnabled) continue;
+                    if (it.CanInteract(this)) return it;
+                    if (firstEnabled == null) firstEnabled = it;
+                }
+                if (firstEnabled != null) return firstEnabled;
 
                 // A solid object (wall, shelf without script) blocks the view
                 if (!col.isTrigger) return null;
