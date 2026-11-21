@@ -52,6 +52,29 @@ namespace Game.Core
             ItemPlaced?.Invoke(item, id, receiver);
         public static void RaiseObjectUsed(GameObject obj, string id) => ObjectUsed?.Invoke(obj, id);
 
+        // ---------- Shopping list (Game.Gameplay) ----------
+        // No data is passed: listeners read ShoppingListTracker.Entries themselves.
+
+        /// <summary>Progress on the shopping list changed (an item was counted).</summary>
+        public static event Action ShoppingListChanged;
+        /// <summary>Raised ONCE when every item on the list is collected.</summary>
+        public static event Action ShoppingListCompleted;
+
+        public static void RaiseShoppingListChanged() => ShoppingListChanged?.Invoke();
+        public static void RaiseShoppingListCompleted() => ShoppingListCompleted?.Invoke();
+
+        // ---------- Shelves (Game.Gameplay) ----------
+
+        /// <summary>(shelf, itemId, stockLeft) — someone took an item from a shelf.</summary>
+        public static event Action<GameObject, string, int> ShelfStockChanged;
+        /// <summary>(shelf, itemId) — the shelf just ran out.</summary>
+        public static event Action<GameObject, string> ShelfEmptied;
+
+        public static void RaiseShelfStockChanged(GameObject shelf, string itemId, int stock) =>
+            ShelfStockChanged?.Invoke(shelf, itemId, stock);
+        public static void RaiseShelfEmptied(GameObject shelf, string itemId) =>
+            ShelfEmptied?.Invoke(shelf, itemId);
+
         // Clears stale subscribers when "Enter Play Mode Options" skips domain reload.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -64,6 +87,10 @@ namespace Game.Core
             ItemDropped = null;
             ItemPlaced = null;
             ObjectUsed = null;
+            ShoppingListChanged = null;
+            ShoppingListCompleted = null;
+            ShelfStockChanged = null;
+            ShelfEmptied = null;
         }
     }
 }
