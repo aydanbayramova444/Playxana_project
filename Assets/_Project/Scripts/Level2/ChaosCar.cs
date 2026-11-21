@@ -63,6 +63,7 @@ namespace Game.Level2
             Vector3 next = pos;
             next.z += _dir * _speed * Time.fixedDeltaTime;
             next.x = Mathf.MoveTowards(pos.x, targetX, (2f + 4f * chaos) * Time.fixedDeltaTime);
+            next.x = KeepOutOfSafeZones(next);
 
             // Off one end of the road → come back at the other end
             if (next.z > maxZ) next.z = minZ;
@@ -73,6 +74,21 @@ namespace Game.Level2
             if (delta.sqrMagnitude > 0.0001f && Mathf.Abs(next.z - pos.z) < 5f) // not on a wrap jump
                 _rb.MoveRotation(Quaternion.LookRotation(delta.normalized));
             _rb.MovePosition(next);
+        }
+
+        /// <summary>Next to a safe zone the car stays on its side of the zone's edge (never drives into it).</summary>
+        private static float KeepOutOfSafeZones(Vector3 p)
+        {
+            const float carHalfWidth = 1.3f, carHalfLength = 2.6f;
+            float x = p.x;
+            foreach (SafeZone zone in SafeZone.All)
+            {
+                Bounds a = zone.Area;
+                if (p.z < a.min.z - carHalfLength || p.z > a.max.z + carHalfLength) continue;
+                if (a.center.x > 0f) x = Mathf.Min(x, a.min.x - carHalfWidth); // zone on the right side
+                else x = Mathf.Max(x, a.max.x + carHalfWidth);                // zone on the left side
+            }
+            return x;
         }
 
         /// <summary>Something sudden: new lane, speed burst, hard brake, or a U-turn.</summary>
