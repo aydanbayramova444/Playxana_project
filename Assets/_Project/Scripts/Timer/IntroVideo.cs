@@ -8,10 +8,23 @@ public class IntroVideo : MonoBehaviour
     public GameObject gameplayUI;
     public GameTimer gameTimer;
 
+    public GameObject skipHint;        // "Press SPACE to skip" yazısı
+    public float hintDelay = 3f;       // yazı 3 saniyə sonra çıxsın
+
+    public GameObject[] npcs;          // YENİ: bütün NPC-lər
+
+    private bool finished;
+    private float elapsed;
+
     void Start()
     {
         gameplayUI.SetActive(false);
         videoPanel.SetActive(true);
+        if (skipHint != null) skipHint.SetActive(false);
+
+        // YENİ: video gedərkən NPC-lər söndürülür
+        foreach (var npc in npcs)
+            npc.SetActive(false);
 
         videoPlayer.loopPointReached += OnVideoEnd;
         videoPlayer.Play();
@@ -19,15 +32,32 @@ public class IntroVideo : MonoBehaviour
 
     void OnVideoEnd(VideoPlayer vp)
     {
+        if (finished) return;
+        finished = true;
+
+        videoPlayer.loopPointReached -= OnVideoEnd;
+        videoPlayer.Stop();
+
+        if (skipHint != null) skipHint.SetActive(false);
         videoPanel.SetActive(false);
         gameplayUI.SetActive(true);
+
+        // YENİ: video bitəndə NPC-lər aktiv olur
+        foreach (var npc in npcs)
+            npc.SetActive(true);
+
         gameTimer.StartTimer();
     }
 
-    // İstəyə bağlı: Space ilə videonu keç
     void Update()
     {
-        if (videoPanel.activeSelf && Input.GetKeyDown(KeyCode.Space))
+        if (finished) return;
+
+        elapsed += Time.deltaTime;
+        if (skipHint != null && elapsed >= hintDelay && !skipHint.activeSelf)
+            skipHint.SetActive(true);
+
+        if (Input.GetKeyDown(KeyCode.Space))
             OnVideoEnd(videoPlayer);
     }
 }
