@@ -79,6 +79,7 @@ namespace Game.Gameplay
         private Transform _bat, _cam;
         private Quaternion _batRest;
         private bool _swinging;
+        private const float BatFps = 12f; // old-console animation: moves in steps, not smoothly
 
         public int SuppliesLeft => Mathf.Max(0, _total - _stolen);
         public int TotalSupplies => _total;
@@ -386,32 +387,12 @@ namespace Game.Gameplay
 
             _bat = new GameObject("Bat").transform;
             _bat.SetParent(_cam, false);
-            _bat.localPosition = new Vector3(0.34f, -0.36f, 0.62f);
-            _batRest = Quaternion.Euler(-35f, -15f, 20f); // leaning forward, ready
+            _bat.localPosition = new Vector3(0.40f, -0.47f, 0.70f);
+            _bat.localScale = Vector3.one * 0.85f;
+            _batRest = Quaternion.Euler(26f, 0f, 4f); // top leans away from the camera, so the nails are in view
             _bat.localRotation = _batRest;
 
-            Color wood = new Color(0.45f, 0.30f, 0.17f);
-            Color tape = new Color(0.12f, 0.11f, 0.10f);
-            BatPart(PrimitiveType.Cylinder, new Vector3(0, 0.17f, 0), new Vector3(0.045f, 0.17f, 0.045f), tape);  // grip
-            BatPart(PrimitiveType.Cylinder, new Vector3(0, 0.50f, 0), new Vector3(0.06f, 0.18f, 0.06f), wood);    // middle
-            BatPart(PrimitiveType.Cylinder, new Vector3(0, 0.80f, 0), new Vector3(0.085f, 0.14f, 0.085f), wood);  // thick end
-            BatPart(PrimitiveType.Sphere, new Vector3(0, 0.94f, 0), new Vector3(0.085f, 0.04f, 0.085f), wood);   // rounded top
-            foreach (float y in new[] { 0.76f, 0.84f })                                                          // two nails
-                BatPart(PrimitiveType.Cube, new Vector3(0.08f, y, 0), new Vector3(0.04f, 0.008f, 0.008f), new Color(0.5f, 0.5f, 0.5f));
-        }
-
-        private void BatPart(PrimitiveType type, Vector3 pos, Vector3 scale, Color color)
-        {
-            var go = GameObject.CreatePrimitive(type);
-            Destroy(go.GetComponent<Collider>()); // never blocks the E-ray or bumps into things
-            go.transform.SetParent(_bat, false);
-            go.transform.localPosition = pos;
-            go.transform.localScale = scale;
-            var r = go.GetComponent<Renderer>();
-            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            var mat = new Material(r.sharedMaterial) { color = color };
-            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
-            r.sharedMaterial = mat;
+            RetroBat.Build(_bat);
         }
 
         private void UpdateBat()
@@ -421,7 +402,7 @@ namespace Game.Gameplay
             // Gentle sway while idle.
             if (!_swinging)
             {
-                float t = Time.time;
+                float t = Mathf.Floor(Time.time * BatFps) / BatFps;
                 _bat.localRotation = _batRest * Quaternion.Euler(Mathf.Sin(t * 1.7f) * 2f, Mathf.Sin(t * 1.1f) * 2f, 0f);
             }
 
@@ -460,9 +441,9 @@ namespace Game.Gameplay
         {
             _swinging = true;
             Quaternion up = _batRest * Quaternion.Euler(-30f, 25f, 0f);      // wind up
-            Quaternion down = _batRest * Quaternion.Euler(85f, -55f, -20f); // swing across
+            Quaternion down = _batRest * Quaternion.Euler(50f, -55f, 30f); // swing across
             yield return RotateBat(_bat.localRotation, up, 0.07f);
-            yield return RotateBat(up, down, 0.10f);
+            yield return RotateBat(up, down, 0.13f);
             yield return RotateBat(down, _batRest, 0.22f);
             _swinging = false;
         }
@@ -472,7 +453,8 @@ namespace Game.Gameplay
             for (float t = 0; t < time; t += Time.deltaTime)
             {
                 if (_bat == null) yield break;
-                _bat.localRotation = Quaternion.Slerp(from, to, Mathf.SmoothStep(0, 1, t / time));
+                float stepped = Mathf.Ceil(t * BatFps * 2f) / (BatFps * 2f);
+                _bat.localRotation = Quaternion.Slerp(from, to, Mathf.SmoothStep(0, 1, stepped / time));
                 yield return null;
             }
             if (_bat != null) _bat.localRotation = to;
