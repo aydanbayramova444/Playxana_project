@@ -27,6 +27,8 @@ namespace Game.Level2
         [SerializeField] private string menuScene = "MainMenu";
         [Tooltip("Level 3, loaded with Enter / Space after you reach the shelter.")]
         [SerializeField] private string nextScene = "Shelter";
+        [Tooltip("Nuclear siren on the shelter roof (0 = silent).")]
+        [Range(0f, 1f)] [SerializeField] private float sirenVolume = 0.6f;
 
         public float TimeLeft { get; private set; }
         public int Hits { get; private set; }
@@ -58,6 +60,7 @@ namespace Game.Level2
             var pc = FindAnyObjectByType<PlayerController>();
             if (pc != null) _player = pc.GetComponent<CharacterController>();
             GameManager.Instance?.StartGame();
+            NuclearSiren.Create(sirenVolume);
         }
 
         private void Update()
