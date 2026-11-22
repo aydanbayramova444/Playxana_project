@@ -198,17 +198,30 @@ namespace Game.EditorTools
             }
         }
 
+        internal static readonly string[] MovingModels =
+        {
+            "Taxi", "Muscle_Red", "Police", "Yellow", "Blue", "Muscle_Orange",
+            "Green", "White", "Muscle_Blue", "Orange", "Pink", "Neon",
+        };
+
+        internal static readonly string[] WreckModels =
+        {
+            "Wreck_Brown", "Wreck_Gray", "Wreck_Black", "Wreck_Blue", "Wreck_Police", "Wreck_Red",
+        };
+
+        /// <summary>A little bigger than the car body (1.7 x 3.95 m).</summary>
+        internal static readonly Vector3 CarHitZone = new Vector3(2.2f, 1.8f, 4.55f);
+
         /// <summary>Wrecked cars and concrete barriers to run around (they don't move).</summary>
         static void BuildObstacles(Transform p)
         {
-            string[] paints = { "CarRed", "CarBlue", "CarWhite" };
             var wrecks = new[]
             {
                 (new Vector3(-6.5f, 0, 30f), 10f), (new Vector3(3.5f, 0, 58f), 160f), (new Vector3(6.2f, 0, 92f), 85f),
                 (new Vector3(-2f, 0, 120f), 40f), (new Vector3(-6.4f, 0, 150f), 175f), (new Vector3(2.5f, 0, 176f), 300f),
             };
             for (int i = 0; i < wrecks.Length; i++)
-                S.Car(p, wrecks[i].Item1, wrecks[i].Item2, paints[i % 3]).name = "WreckedCar";
+                S.Car(p, wrecks[i].Item1, wrecks[i].Item2, WreckModels[i % WreckModels.Length]).name = "WreckedCar";
 
             Material hazard = S.M("Hazard", 2f);
             foreach (var pos in new[] { new Vector3(0.5f, 0.45f, 45f), new Vector3(-3.5f, 0.45f, 105f), new Vector3(4f, 0.45f, 135f), new Vector3(-1f, 0.45f, 165f) })
@@ -263,20 +276,19 @@ namespace Game.EditorTools
 
         static void BuildMovingCars(Transform p)
         {
-            string[] paints = { "CarRed", "CarBlue", "CarWhite" };
             float[] lanes = { -3.5f, -1.5f, 1.5f, 3.5f };
             for (int i = 0; i < 12; i++)
             {
                 float z = Mathf.Lerp(28f, ShelterZ - 12f, i / 11f) + Random.Range(-4f, 4f);
                 float yaw = Random.value < 0.5f ? 0f : 180f;
-                Transform car = S.Car(p, new Vector3(lanes[i % lanes.Length], 0, z), yaw, paints[i % 3]);
+                Transform car = S.Car(p, new Vector3(lanes[i % lanes.Length], 0, z), yaw, MovingModels[i % MovingModels.Length]);
                 car.name = $"ChaosCar_{i + 1}";
                 foreach (var t in car.GetComponentsInChildren<Transform>()) t.gameObject.isStatic = false; // they move!
 
                 car.gameObject.AddComponent<Rigidbody>().isKinematic = true;
                 var hit = car.gameObject.AddComponent<BoxCollider>(); // bigger trigger = hit zone
                 hit.isTrigger = true;
-                hit.size = new Vector3(2.3f, 1.8f, 4.8f);
+                hit.size = CarHitZone;
                 hit.center = new Vector3(0, 0.9f, 0);
 
                 var chaos = car.gameObject.AddComponent<ChaosCar>();

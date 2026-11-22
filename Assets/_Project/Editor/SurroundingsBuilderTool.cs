@@ -194,36 +194,42 @@ namespace Game.EditorTools
 
         static void BuildCars(Transform p)
         {
-            Car(p, new Vector3(10f, 0f, -6f), 90f, "CarRed");          // parked by the curb
-            Car(p, new Vector3(-6f, 0f, -9.2f), 115f, "CarBlue");      // crashed across the lane
-            Car(p, new Vector3(-24f, 0f, -6f), 90f, "CarWhite");
-            Car(p, new Vector3(25f, 0f, -10f), 270f, "CarRed");
+            Car(p, new Vector3(10f, 0f, -6f), 90f, "Red");             // parked by the curb
+            Car(p, new Vector3(-6f, 0f, -9.2f), 115f, "Wreck_Blue");   // crashed across the lane
+            Car(p, new Vector3(-24f, 0f, -6f), 90f, "White");
+            Car(p, new Vector3(25f, 0f, -10f), 270f, "Taxi");
         }
 
-        internal static Transform Car(Transform p, Vector3 pos, float yaw, string paint)
+        internal const string RetroCarFolder = "Assets/_Project/Prefabs/Cars";
+
+        /// <summary>
+        /// A car from the Super Retro Compact Pack (our copies: PS1 shader + one box collider).
+        /// Faces +Z, centred on the root. <paramref name="model"/> = prefab name without "RetroCar_",
+        /// e.g. "Taxi", "Muscle_Red", "Wreck_Brown".
+        /// </summary>
+        internal static Transform Car(Transform p, Vector3 pos, float yaw, string model)
         {
             var car = new GameObject("Car").transform;
             car.SetParent(p, false);
             car.SetPositionAndRotation(pos, Quaternion.Euler(0, yaw, 0));
-            Material body = M(paint, 2f), glass = M("CarWindow", 2f), rubber = M("Rubber", 2f);
-
-            Local(car, "Body", new Vector3(0, 0.6f, 0), new Vector3(1.8f, 0.7f, 4.2f), body);
-            Local(car, "Cabin", new Vector3(0, 1.22f, -0.2f), new Vector3(1.6f, 0.6f, 2.1f), glass);
-            Local(car, "CabinRoof", new Vector3(0, 1.54f, -0.2f), new Vector3(1.62f, 0.06f, 1.9f), body);
-            foreach (float x in new[] { -0.88f, 0.88f })
-            foreach (float z in new[] { -1.35f, 1.35f })
-            {
-                var w = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                w.name = "Wheel";
-                Object.DestroyImmediate(w.GetComponent<Collider>());
-                w.transform.SetParent(car, false);
-                w.transform.localPosition = new Vector3(x, 0.33f, z);
-                w.transform.localRotation = Quaternion.Euler(0, 0, 90);
-                w.transform.localScale = new Vector3(0.66f, 0.12f, 0.66f);
-                w.GetComponent<Renderer>().sharedMaterial = rubber;
-                w.isStatic = true;
-            }
+            AddCarModel(car, model, isStatic: true);
             return car;
+        }
+
+        internal static void AddCarModel(Transform car, string model, bool isStatic)
+        {
+            string path = $"{RetroCarFolder}/RetroCar_{model}.prefab";
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null)
+            {
+                Debug.LogError($"[Cars] Missing car prefab: {path}");
+                return;
+            }
+
+            var body = (GameObject)PrefabUtility.InstantiatePrefab(prefab, car);
+            body.transform.localPosition = Vector3.zero;
+            body.transform.localRotation = Quaternion.identity;
+            foreach (var t in body.GetComponentsInChildren<Transform>()) t.gameObject.isStatic = isStatic;
         }
 
         static void BuildStreetProps(Transform p)
