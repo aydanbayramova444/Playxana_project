@@ -31,6 +31,8 @@ namespace Game.Gameplay
         public const int HandsCapacity = 2;
 
         public StoreRound Round { get; set; }
+        /// <summary>Rigged character model for the body (set by StoreRound before Start). Null = simple shapes.</summary>
+        public GameObject BodyModel { get; set; }
         public int HeldCount => (_left != null ? 1 : 0) + (_right != null ? 1 : 0);
         public bool HandsFull => HeldCount >= HandsCapacity;
         /// <summary>How many products this shopper has thrown on the floor so far.</summary>
@@ -38,6 +40,7 @@ namespace Game.Gameplay
 
         private NavMeshAgent _agent;
         private Transform _handL, _handR;
+        private LowPolyHuman _human;
         private Game.Interaction.Pickup _left, _right;
         private State _state;
         private Shelf _shelf, _lastShelf;
@@ -92,14 +95,24 @@ namespace Game.Gameplay
                 col.height = 1.8f;
                 col.center = new Vector3(0, 0.9f, 0);
             }
-            if (transform.Find("Body") == null) BuildBody();
-
-            _handL = Hand("Hand_L", -0.32f);
-            _handR = Hand("Hand_R", 0.32f);
+            _handL = Hand("Hand_L", -0.17f);
+            _handR = Hand("Hand_R", 0.17f);
         }
 
         private void Start()
         {
+            if (transform.Find("Body") == null)
+            {
+                Color[] shirts =
+                {
+                    new Color(0.55f, 0.15f, 0.15f), new Color(0.18f, 0.3f, 0.55f), new Color(0.25f, 0.45f, 0.25f),
+                    new Color(0.6f, 0.5f, 0.18f), new Color(0.4f, 0.4f, 0.42f), new Color(0.45f, 0.25f, 0.45f),
+                };
+                if (BodyModel != null)
+                    _human = LowPolyHuman.Build(transform, BodyModel, 1.75f, shirts[Random.Range(0, shirts.Length)], grime: 0.15f);
+                else BuildBody();
+            }
+
             if (!_agent.isOnNavMesh)
             {
                 Debug.LogError("[Store] Shopper is not on the NavMesh — bake one (Tools → Store → Add Shopper Bots + NavMesh).", this);
@@ -111,6 +124,7 @@ namespace Game.Gameplay
 
         private void Update()
         {
+            if (_human != null) _human.CarryPose = HeldCount > 0; // arms forward while holding something
             if (_stopped || !_agent.isOnNavMesh) return;
 
             switch (_state)
@@ -136,6 +150,7 @@ namespace Game.Gameplay
                         Transform hand = _left == null ? _handL : _handR;
                         item.TakeByNpc(hand);
                         if (_left == null) _left = item; else _right = item;
+                        if (Round != null) Round.OnShopperGrabbed(this, item);
                     }
                     NextTarget();
                     break;
@@ -188,6 +203,7 @@ namespace Game.Gameplay
         private void MakeMessAt(Shelf shelf)
         {
             int count = Random.Range(1, 3);
+            string knocked = null;
             for (int i = 0; i < count && shelf != null; i++)
             {
                 var product = shelf.TakeOneItem();
@@ -195,9 +211,10 @@ namespace Game.Gameplay
                 Vector3 dir = shelf.transform.forward + shelf.transform.right * Random.Range(-1f, 1f);
                 product.KnockByNpc(dir.normalized * Random.Range(2f, 3.5f) + Vector3.up * Random.Range(1f, 2.5f));
                 MessMade++;
+                knocked = product.ItemId;
             }
             KickLooseItems();
-            if (Round != null) Round.OnMess(this);
+            if (Round != null && knocked != null) Round.OnMess(this, knocked);
         }
 
         private void KickLooseItems()
@@ -236,7 +253,7 @@ namespace Game.Gameplay
         {
             var h = new GameObject(handName).transform;
             h.SetParent(transform, false);
-            h.localPosition = new Vector3(side, 1.0f, 0.3f);
+            h.localPosition = new Vector3(side, 1.18f, 0.5f); // where the hands are with both arms forward
             return h;
         }
 

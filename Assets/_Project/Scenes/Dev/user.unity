@@ -12683,6 +12683,21 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 822916972}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &824088243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1919629786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8803305980c5c4ddbb5309d22caab92d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.StoreDecor
+  blasts: 1
+  blastEvery: {x: 15, y: 25}
+  sirenVolume: 0.12
 --- !u!1 &824483020
 GameObject:
   m_ObjectHideFlags: 0
@@ -33972,6 +33987,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1919629788}
   - component: {fileID: 1919629787}
+  - component: {fileID: 824088243}
   m_Layer: 0
   m_Name: StoreRound
   m_TagString: Untagged
@@ -33995,6 +34011,16 @@ MonoBehaviour:
   spawnPoint: {fileID: 1130643984}
   firstShopperDelay: 1.5
   spawnGap: 2.5
+  characterModels:
+  - {fileID: 919132149155446097, guid: 8242b18fc7252af44a453bcfefda7e7c, type: 3}
+  - {fileID: 919132149155446097, guid: 0842a324783ca334f92c110573b49a24, type: 3}
+  - {fileID: 919132149155446097, guid: f533123257178bd439afd8d43ab42434, type: 3}
+  - {fileID: 919132149155446097, guid: d1fbc096a6f62ea458a4555b88c96ac2, type: 3}
+  - {fileID: 919132149155446097, guid: 89ec959954575f94b93e606fff2cb187, type: 3}
+  - {fileID: 919132149155446097, guid: ac3c30facbd791149b264a4003feb7ab, type: 3}
+  - {fileID: 919132149155446097, guid: ab7437c47894cb54d845cb3f2a83e3c0, type: 3}
+  - {fileID: 919132149155446097, guid: daf568f51c2fa264691d172eec050e32, type: 3}
+  - {fileID: 919132149155446097, guid: ae3459f40eace6943ae977695718d0d3, type: 3}
   timeLimit: 60
   menuScene: MainMenu
 --- !u!4 &1919629788

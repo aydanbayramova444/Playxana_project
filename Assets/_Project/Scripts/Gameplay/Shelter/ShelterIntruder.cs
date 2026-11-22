@@ -23,8 +23,8 @@ namespace Game.Gameplay
     {
         private enum State { GoingToTarget, Grabbing, Escaping, Fleeing, Staggered, Down }
 
-        [SerializeField] private float walkSpeed = 2.6f;
-        [SerializeField] private float escapeSpeed = 3.4f;    // player walks 5, sprints 8: you can catch them
+        [SerializeField] private float walkSpeed = 3.0f;
+        [SerializeField] private float escapeSpeed = 3.8f;    // player walks 5, sprints 8: you can catch them
         [SerializeField] private float fleeSpeed = 6f;
         [SerializeField] private float grabTime = 1.2f;       // at a shelf: the window to stop them
         [SerializeField] private float floorGrabTime = 0.6f;  // snatching something off the floor is quicker
@@ -35,6 +35,8 @@ namespace Game.Gameplay
         [Range(0f, 1f)] [SerializeField] private float knockDownChance = 0.5f;
 
         public ShelterDirector Director { get; set; }
+        /// <summary>Rigged character model for the body (set by the director before Start). Null = simple shapes.</summary>
+        public GameObject BodyModel { get; set; }
         public Transform Exit { get; set; }
         public bool IsCarrying => _carried != null;
         public int Health => _health;
@@ -46,6 +48,7 @@ namespace Game.Gameplay
 
         private NavMeshAgent _agent;
         private Transform _hand, _body;
+        private Light _glow;
         private State _state;
         private Shelf _shelf;
         private Game.Interaction.Pickup _floorItem, _carried;
@@ -118,16 +121,32 @@ namespace Game.Gameplay
                 col.height = 1.8f;
                 col.center = new Vector3(0, 0.9f, 0);
             }
-            if (transform.Find("Body") == null) BuildBody();
-            _body = transform.Find("Body");
-
+            // Stolen goods ride on the shoulder: visible from behind as they run for the exit.
             _hand = new GameObject("Hand").transform;
             _hand.SetParent(transform, false);
-            _hand.localPosition = new Vector3(0.25f, 1.0f, 0.35f);
+            _hand.localPosition = new Vector3(0.24f, 1.62f, -0.05f);
+
+            // Red glow on anyone carrying your supplies — easy to spot in the dark shelter.
+            _glow = new GameObject("CarryGlow").AddComponent<Light>();
+            _glow.transform.SetParent(transform, false);
+            _glow.transform.localPosition = new Vector3(0f, 2.1f, 0f);
+            _glow.type = LightType.Point;
+            _glow.color = new Color(1f, 0.15f, 0.1f);
+            _glow.range = 2.5f;
+            _glow.intensity = 1.6f;
+            _glow.shadows = LightShadows.None;
+            _glow.enabled = false;
         }
 
         private void Start()
         {
+            if (transform.Find("Body") == null)
+            {
+                if (BodyModel != null) LowPolyHuman.Build(transform, BodyModel, 1.75f, null, grime: 1f); // filthy survivor
+                else BuildBody();
+            }
+            _body = transform.Find("Body");
+
             if (!_agent.isOnNavMesh)
             {
                 Debug.LogError("[Shelter] Intruder is not on the NavMesh — run Tools → Shelter → Create Shelter Scene.", this);
@@ -139,6 +158,7 @@ namespace Game.Gameplay
 
         private void Update()
         {
+            if (_glow != null) _glow.enabled = _carried != null && _state != State.Down;
             if (_done || _state == State.Down || !_agent.isOnNavMesh) return;
 
             switch (_state)
@@ -164,13 +184,14 @@ namespace Game.Gameplay
                 case State.Grabbing:
                     if ((_timer -= Time.deltaTime) > 0f) return;
                     Game.Interaction.Pickup item = null;
-                    if (_floorItem != null && IsLoose(_floorItem)) item = _floorItem;
+                    bool fromFloor = _floorItem != null && IsLoose(_floorItem);
+                    if (fromFloor) item = _floorItem;
                     else if (_shelf != null) item = _shelf.TakeOneItem();
                     if (item == null) { PickTarget(); return; }
                     item.TakeByNpc(_hand);
                     _carried = item;
                     _floorItem = null;
-                    if (Director != null) Director.OnIntruderGrabbed(this, item);
+                    if (Director != null) Director.OnIntruderGrabbed(this, item, fromFloor);
                     GoToExit(escapeSpeed, State.Escaping);
                     break;
 

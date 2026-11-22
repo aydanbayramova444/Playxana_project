@@ -47,6 +47,22 @@ namespace Game.EditorTests
                 yield return null;
             }
             foreach (var s in round.Shoppers) if (s != null) mess += s.MessMade;
+            // Look at the nearest shopper and take a picture
+            var cam = Camera.main;
+            StoreShopper near = null;
+            foreach (var s in round.Shoppers) if (s != null && (near == null || Vector3.Distance(s.transform.position, cam.transform.position) < Vector3.Distance(near.transform.position, cam.transform.position))) near = s;
+            if (near != null) { cam.transform.parent.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(near.transform.position - cam.transform.position, Vector3.up)); cam.transform.localRotation = Quaternion.identity; }
+            Shot("store_shoppers");
+            // Wide shots of the decorated store from the middle of the shelves
+            Vector3 c = Vector3.zero; int n = 0;
+            foreach (var sh in Object.FindObjectsByType<Shelf>()) { c += sh.transform.position; n++; }
+            if (n > 0)
+            {
+                c /= n;
+                ShotFrom("store_decor_back", c + new Vector3(0f, 1.7f, -2.5f), Quaternion.Euler(-8f, 0f, 0f));
+                ShotFrom("store_decor_left", c + new Vector3(2f, 1.7f, 0f), Quaternion.Euler(-8f, -100f, 0f));
+                ShotFrom("store_decor_front", c + new Vector3(0f, 1.7f, 2f), Quaternion.Euler(-5f, 180f, 0f));
+            }
 
             Debug.Log($"[StoreTest] spawned={round.Spawned} maxHeld={maxHeld} full={someoneFull} inside={someoneInside} mess={mess}");
             Assert.AreEqual(4, round.Spawned, "Spawn count from the Inspector was not used.");
@@ -174,6 +190,37 @@ namespace Game.EditorTests
         {
             Time.timeScale = 1f;
             yield return new ExitPlayMode();
+        }
+
+        /// <summary>Saves what the player camera sees (only when HUMAN_RENDER_DIR is set) — for checking the look.</summary>
+        static void Shot(string name)
+        {
+            string dir = System.Environment.GetEnvironmentVariable("HUMAN_RENDER_DIR");
+            Camera cam = Camera.main;
+            if (string.IsNullOrEmpty(dir) || cam == null) return;
+            var rt = new RenderTexture(1280, 720, 24);
+            var old = cam.targetTexture;
+            cam.targetTexture = rt;
+            cam.Render();
+            cam.targetTexture = old;
+            RenderTexture.active = rt;
+            var tex = new Texture2D(1280, 720, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0);
+            tex.Apply();
+            RenderTexture.active = null;
+            System.IO.File.WriteAllBytes(System.IO.Path.Combine(dir, name + ".png"), tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            rt.Release();
+        }
+
+        static void ShotFrom(string name, Vector3 pos, Quaternion rot)
+        {
+            var cam = Camera.main;
+            if (cam == null) return;
+            Vector3 p0 = cam.transform.position; Quaternion r0 = cam.transform.rotation;
+            cam.transform.SetPositionAndRotation(pos, rot);
+            Shot(name);
+            cam.transform.SetPositionAndRotation(p0, r0);
         }
     }
 }
