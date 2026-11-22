@@ -29,9 +29,12 @@ namespace Game.Level2
         [SerializeField] private string nextScene = "Shelter";
         [Tooltip("Nuclear siren on the shelter roof (0 = silent).")]
         [Range(0f, 1f)] [SerializeField] private float sirenVolume = 0.6f;
+        [Tooltip("Engines, tyres, horns and crashes (0 = silent).")]
+        [Range(0f, 1f)] [SerializeField] private float carVolume = 0.8f;
 
         public float TimeLeft { get; private set; }
         public int Hits { get; private set; }
+        public float CarVolume => carVolume;
         public bool InSafeZone => _safeZones > 0;
 
         private int _safeZones;   // how many zones the player is inside (they could overlap)
@@ -104,10 +107,10 @@ namespace Game.Level2
             }
         }
 
-        /// <summary>A car hit the player. Called by <see cref="ChaosCar"/>.</summary>
-        public void RegisterHit(Vector3 push)
+        /// <summary>A car hit the player. Called by <see cref="ChaosCar"/>. False = didn't count (safe zone, cooldown...).</summary>
+        public bool RegisterHit(Vector3 push)
         {
-            if (_end != End.None || InSafeZone || Time.time - _lastHitTime < hitCooldown) return;
+            if (_end != End.None || InSafeZone || Time.time - _lastHitTime < hitCooldown) return false;
 
             _lastHitTime = Time.time;
             Hits++;
@@ -115,6 +118,7 @@ namespace Game.Level2
             _flash = 1f;
 
             if (Hits >= maxHits) Finish(End.RunOver);
+            return true;
         }
 
         public void EnterSafeZone() => _safeZones++;

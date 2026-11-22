@@ -36,6 +36,7 @@ namespace Game.Level2
 
         private Rigidbody _rb;
         private Transform _player;
+        private CarAudio _audio;
         private float _huntUntil;
         private float _speed, _targetSpeed, _dir, _laneX, _phase, _nextEvent;
 
@@ -55,7 +56,13 @@ namespace Game.Level2
             _nextEvent = Time.time + Random.Range(1f, 4f);
             var pc = FindAnyObjectByType<PlayerController>();
             if (pc != null) _player = pc.transform;
+
+            _audio = gameObject.AddComponent<CarAudio>();
+            _audio.Init(this);
         }
+
+        /// <summary>Current speed in m/s (engine sound).</summary>
+        public float Speed => _speed;
 
         /// <summary>Player is in front of the car (in its driving direction), close enough, and not in a safe zone.</summary>
         private bool PlayerAhead()
@@ -131,6 +138,7 @@ namespace Game.Level2
                 _laneX = Mathf.Clamp(_player.position.x, -halfWidth, halfWidth);
                 _targetSpeed = maxSpeed * (1f + 0.35f * aggression);
                 _huntUntil = Time.time + 2f + 2f * aggression;
+                _audio.Horn();
                 _nextEvent = Time.time + 2f + 2f * aggression; // no other event while hunting
                 return;
             }
@@ -141,9 +149,15 @@ namespace Game.Level2
             else if (roll < 0.6f)
                 _targetSpeed = Random.Range(minSpeed, maxSpeed) * (1f + 0.4f * chaos); // speed up / slow down
             else if (roll < 0.75f)
+            {
+                if (_speed > 4f) _audio.Skid();
                 _targetSpeed = 0.5f;                                                 // hard brake
+            }
             else if (roll < 0.75f + 0.2f * chaos)
+            {
                 _dir = -_dir;                                                        // turn around!
+                _audio.Skid();
+            }
             else
                 _targetSpeed = Random.Range(minSpeed, maxSpeed);
         }
@@ -157,7 +171,8 @@ namespace Game.Level2
             Vector3 away = other.transform.position - transform.position;
             away.y = 0f;
             Vector3 push = (away.normalized + transform.forward * 0.6f).normalized;
-            Level2Manager.Instance.RegisterHit(push * Mathf.Lerp(6f, 14f, _speed / maxSpeed));
+            bool hit = Level2Manager.Instance.RegisterHit(push * Mathf.Lerp(6f, 14f, _speed / maxSpeed));
+            if (hit && _audio != null) _audio.Crash();
         }
     }
 }
