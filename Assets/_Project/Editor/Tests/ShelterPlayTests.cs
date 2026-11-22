@@ -124,6 +124,8 @@ namespace Game.EditorTests
                 yield return null;
             }
             Assert.IsNotNull(level2, "No Level2Manager in Level2.unity.");
+            yield return null;
+            Game.UI.RoundHud.SkipBriefing();
 
             level2.ReachShelter();   // you made it to the shelter
             yield return null;
@@ -325,6 +327,7 @@ namespace Game.EditorTests
                 var d = Object.FindAnyObjectByType<ShelterDirector>();
                 if (d != null && d != notThis && d.IsRunning)
                 {
+                    Game.UI.RoundHud.SkipBriefing();
                     Time.timeScale = Speed;
                     found(d);
                     yield break;

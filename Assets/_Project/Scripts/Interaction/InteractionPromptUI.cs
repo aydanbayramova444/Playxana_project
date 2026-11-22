@@ -49,6 +49,8 @@ namespace Game.Interaction
         private void OnGUI()
         {
             if (label != null || interactor == null || !interactor.isActiveAndEnabled) return;
+            var gm = Game.Core.GameManager.Instance;
+            if (gm != null && gm.State == Game.Core.GameState.Briefing) return; // no crosshair over the briefing
 
             float cx = Screen.width * 0.5f;
             float cy = Screen.height * 0.5f;

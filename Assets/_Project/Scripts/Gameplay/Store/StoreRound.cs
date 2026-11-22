@@ -46,7 +46,13 @@ namespace Game.Gameplay
         private readonly List<StoreShopper> _shoppers = new List<StoreShopper>();
         private float _timeLeft;
         private bool _running, _over, _listDone;
-        private TextMeshProUGUI _timerText, _messageText, _endTitle, _endSub;
+        private TextMeshProUGUI _messageText, _endTitle, _endSub;
+        private Game.UI.RoundHud _hud;
+        private ShoppingListTracker _list;
+        private int _rescued;
+
+        private const int RoundNumber = 1;
+        private const int PointsPerItem = 100, ListBonus = 500, PointsPerSecond = 20, PointsPerRescue = 50, MaxRescues = 10;
         private float _messageLeft;
         private CanvasGroup _endGroup;
         private GameObject _endFirst;
@@ -62,8 +68,17 @@ namespace Game.Gameplay
 
         // ---------- Unity ----------
 
-        private void OnEnable() => GameEvents.ShoppingListCompleted += OnListCompleted;
-        private void OnDisable() => GameEvents.ShoppingListCompleted -= OnListCompleted;
+        private void OnEnable()
+        {
+            GameEvents.ShoppingListCompleted += OnListCompleted;
+            GameEvents.ShoppingListChanged += ScoreItems;
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.ShoppingListCompleted -= OnListCompleted;
+            GameEvents.ShoppingListChanged -= ScoreItems;
+        }
 
         private IEnumerator Start()
         {
@@ -71,6 +86,13 @@ namespace Game.Gameplay
             EnsureEventSystem();
             BuildHud();
             _timeLeft = timeLimit;
+            _list = FindAnyObjectByType<ShoppingListTracker>();
+            _hud = Game.UI.RoundHud.Create(transform, RoundNumber, timeLimit, "GET SUPPLIES",
+                $"THE BOMBS ARE COMING. YOU HAVE {Mathf.CeilToInt(timeLimit)} SECONDS.\n" +
+                "FIND EVERYTHING ON YOUR LIST AND PUT IT IN THE CART.\n" +
+                "OTHER SHOPPERS STEAL: TAKE THINGS BACK FROM THEM.\n" +
+                "LIST DONE? RUN OUT THROUGH THE DOOR!",
+                "WASD MOVE   MOUSE LOOK   SHIFT RUN   E TAKE / PUT / GRAB BACK");
 
             yield return null; // shelves build and fill themselves first
             yield return null;
@@ -124,8 +146,21 @@ namespace Game.Gameplay
             _shoppers.Add(shopper);
         }
 
-        public void OnItemsTaken(StoreShopper who, int count) =>
+        public void OnItemsTaken(StoreShopper who, int count)
+        {
             Message(count > 1 ? "You took their stuff back!" : "Got it back!", 1.5f);
+            if (_over || _listDone) return;
+            _rescued = Mathf.Min(MaxRescues, _rescued + count);
+            GameScore.Set(RoundNumber, "TAKEN BACK", _rescued * PointsPerRescue);
+        }
+
+        private void ScoreItems()
+        {
+            if (_hud == null || _list == null || _over) return;
+            int collected = 0;
+            foreach (var entry in _list.Entries) collected += entry.Collected;
+            GameScore.Set(RoundNumber, "ITEMS", collected * PointsPerItem);
+        }
 
         /// <summary>A shopper took a product off a shelf (the shelf count goes down because of this).</summary>
         public void OnShopperGrabbed(StoreShopper who, Game.Interaction.Pickup item)
@@ -150,7 +185,12 @@ namespace Game.Gameplay
             if (_over) return;
             _listDone = true; // timer stops — now get out through the exit (StoreExit → Level 2)
             GameAudio.Play(Sfx.Win, 0.7f);
-            _timerText.color = new Color(0.5f, 1f, 0.5f);
+            if (_hud == null) return;
+            ScoreItems();
+            GameScore.Set(RoundNumber, "LIST DONE", ListBonus);
+            GameScore.Set(RoundNumber, "TIME", Mathf.FloorToInt(_timeLeft) * PointsPerSecond);
+            GameScore.Finish(RoundNumber, cleared: true);
+            _hud.SetTime(_timeLeft, done: true);
         }
 
         private void Lose()
@@ -164,6 +204,7 @@ namespace Game.Gameplay
 
             _endTitle.text = "TIME'S UP";
             _endSub.text = "The shelves are empty. So is your cart.";
+            _hud.ShowResult(cleared: false);
             StartCoroutine(FadeIn(_endGroup, 1f));
             _endGroup.interactable = true;
             _endGroup.blocksRaycasts = true;
@@ -187,9 +228,7 @@ namespace Game.Gameplay
 
         private void UpdateTimer()
         {
-            int s = Mathf.Max(0, Mathf.CeilToInt(_timeLeft));
-            _timerText.text = $"{s / 60}:{s % 60:00}";
-            if (!_listDone) _timerText.color = s <= 10 ? Blood : Bone;
+            if (_hud != null) _hud.SetTime(_timeLeft, _listDone);
         }
 
         private void Message(string text, float seconds, Color? color = null)
@@ -222,9 +261,6 @@ namespace Game.Gameplay
             scaler.matchWidthOrHeight = 0.5f;
             Transform root = canvasGo.transform;
 
-            _timerText = Label(root, "Timer", 72, TextAlignmentOptions.Top);
-            _timerText.fontStyle = FontStyles.Bold;
-            Place(_timerText.rectTransform, new Vector2(0.5f, 1), new Vector2(0, -30), new Vector2(400, 100));
             _messageText = Label(root, "Message", 36, TextAlignmentOptions.Center);
             _messageText.fontStyle = FontStyles.Bold;
             Place(_messageText.rectTransform, new Vector2(0.5f, 0), new Vector2(0, 160), new Vector2(1400, 80));

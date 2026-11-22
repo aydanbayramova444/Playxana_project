@@ -7,6 +7,8 @@ namespace Game.Core
         Playing,
         Paused,
         GameOver,
-        Victory
+        Victory,
+        /// <summary>Round briefing on screen: the world stands still until the player presses Enter.</summary>
+        Briefing
     }
 }

@@ -65,7 +65,11 @@ namespace Game.Gameplay
         private float _timeLeft, _nextSpawn;
         private bool _running, _over;
 
-        private TextMeshProUGUI _suppliesText, _timerText, _messageText;
+        private TextMeshProUGUI _suppliesText, _messageText;
+        private Game.UI.RoundHud _hud;
+
+        private const int RoundNumber = 3;
+        private const int PointsPerStopped = 50, PointsPerSecond = 10, SuppliesPoints = 2000, SurviveBonus = 1000, NothingLostBonus = 500;
         private float _messageLeft;
         private CanvasGroup _endGroup;
         private TextMeshProUGUI _endTitle, _endStats;
@@ -93,6 +97,12 @@ namespace Game.Gameplay
             EnsureEventSystem();
             BuildHud();
             BuildBat();
+            _hud = Game.UI.RoundHud.Create(transform, RoundNumber, surviveSeconds, "DEFEND THE SHELTER",
+                $"PROTECT YOUR SUPPLIES FOR {Mathf.CeilToInt(surviveSeconds)} SECONDS.\n" +
+                "HIT THE THIEVES: 2-3 HITS STOP THEM.\n" +
+                "PICK UP WHAT THEY DROP AND PUT IT BACK.\n" +
+                "IF EVERYTHING IS STOLEN, YOU LOSE.",
+                "WASD MOVE   MOUSE LOOK   LEFT CLICK OR E HIT   E PICK UP / PUT BACK");
 
             _lampIntensity = new float[flickerLights != null ? flickerLights.Length : 0];
             _lampFlicker = new float[_lampIntensity.Length];
@@ -116,6 +126,7 @@ namespace Game.Gameplay
 
         private void Update()
         {
+            if (GameManager.Instance != null && GameManager.Instance.State == GameState.Briefing) return;
             Flicker();
             UpdateBat();
             UpdateMessage();
@@ -165,6 +176,7 @@ namespace Game.Gameplay
         public void OnIntruderStopped(ShelterIntruder who, bool knockedDown)
         {
             _scared++;
+            if (!_over) GameScore.Set(RoundNumber, "THIEVES STOPPED", _scared * PointsPerStopped);
             Swing();
             GameAudio.PlayAt(knockedDown ? Sfx.KnockDown : Sfx.Hit, who.transform.position + Vector3.up);
             Message(knockedDown ? "Down." : "Ran off scared.", 1.5f);
@@ -244,6 +256,14 @@ namespace Game.Gameplay
             _endStats.text = win
                 ? $"Supplies kept: {SuppliesLeft}/{_total}\nIntruders stopped: {_scared}"
                 : $"Held out for {Clock(surviveSeconds - _timeLeft)}\nIntruders stopped: {_scared}";
+            GameScore.Set(RoundNumber, "TIME HELD", Mathf.FloorToInt(surviveSeconds - _timeLeft) * PointsPerSecond);
+            if (win)
+            {
+                GameScore.Set(RoundNumber, "SURVIVED", SurviveBonus);
+                if (_total > 0) GameScore.Set(RoundNumber, "SUPPLIES", Mathf.RoundToInt(SuppliesPoints * SuppliesLeft / (float)_total));
+                if (_stolen == 0) GameScore.Set(RoundNumber, "NOTHING LOST", NothingLostBonus);
+            }
+            _hud.ShowResult(win);
             StartCoroutine(FadeIn(_endGroup, 1.2f));
             _endGroup.interactable = true;
             _endGroup.blocksRaycasts = true;
@@ -271,7 +291,7 @@ namespace Game.Gameplay
             int left = SuppliesLeft;
             bool low = _total > 0 && left <= Mathf.CeilToInt(_total * 0.3f);
             _suppliesText.text = $"SUPPLIES  <color=#{ColorUtility.ToHtmlStringRGB(low ? Blood : Bone)}>{left}/{_total}</color>";
-            _timerText.text = $"HOLD OUT  {Clock(_timeLeft)}";
+            if (_hud != null) _hud.SetTime(_timeLeft);
         }
 
         private void Message(string text, float seconds, Color? color = null)
@@ -306,8 +326,6 @@ namespace Game.Gameplay
 
             _suppliesText = Label(root, "Supplies", 40, TextAlignmentOptions.TopLeft);
             Place(_suppliesText.rectTransform, new Vector2(0, 1), new Vector2(60, -50), new Vector2(700, 60));
-            _timerText = Label(root, "Timer", 40, TextAlignmentOptions.TopRight);
-            Place(_timerText.rectTransform, new Vector2(1, 1), new Vector2(-60, -50), new Vector2(700, 60));
             _messageText = Label(root, "Message", 36, TextAlignmentOptions.Center);
             Place(_messageText.rectTransform, new Vector2(0.5f, 0), new Vector2(0, 170), new Vector2(1400, 120));
             _messageText.fontStyle = FontStyles.Bold;

@@ -176,6 +176,7 @@ namespace Game.EditorTests
                 }
                 if (r != null && r != notThis && r.IsRunning)
                 {
+                    Game.UI.RoundHud.SkipBriefing();
                     Time.timeScale = Speed;
                     found(r);
                     yield break;

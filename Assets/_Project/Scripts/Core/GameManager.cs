@@ -93,9 +93,9 @@ namespace Game.Core
 
         private static void ApplyState(GameState state)
         {
-            bool playing = state == GameState.Playing;
+            bool playing = state == GameState.Playing || state == GameState.Briefing; // both: mouse locked
 
-            Time.timeScale = state == GameState.Paused ? 0f : 1f;
+            Time.timeScale = state == GameState.Paused || state == GameState.Briefing ? 0f : 1f;
             Cursor.lockState = playing ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !playing;
         }

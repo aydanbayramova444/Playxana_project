@@ -46,6 +46,12 @@ namespace Game.Level2
         private CharacterController _player;
         private Vector3 _push;
         private GUIStyle _big, _mid, _small;
+        private Game.UI.RoundHud _hud;
+        private bool _everHit;
+        private float _startZ, _goalZ, _furthest;
+
+        private const int RoundNumber = 2;
+        private const int DistancePoints = 1000, ShelterBonus = 1000, PointsPerSecond = 25, PointsPerHealth = 150, NoHitBonus = 500;
 
         private void Awake()
         {
@@ -64,6 +70,16 @@ namespace Game.Level2
             if (pc != null) _player = pc.GetComponent<CharacterController>();
             GameManager.Instance?.StartGame();
             NuclearSiren.Create(sirenVolume);
+
+            _startZ = _furthest = pc != null ? pc.transform.position.z : 0f;
+            var goal = FindAnyObjectByType<ShelterGoal>();
+            _goalZ = goal != null ? goal.transform.position.z : _startZ + 1f;
+            _hud = Game.UI.RoundHud.Create(transform, RoundNumber, timeLimit, "RUN TO THE SHELTER",
+                $"THE SIREN MEANS {Mathf.CeilToInt(timeLimit)} SECONDS UNTIL THE BOMB.\n" +
+                "REACH THE SHELTER AT THE END OF THE STREET.\n" +
+                $"DODGE THE CARS: {maxHits} HITS AND YOU ARE DEAD.\n" +
+                "GREEN BUS STOPS ARE SAFE AND HEAL YOU.",
+                "WASD MOVE   MOUSE LOOK   SHIFT RUN   A HORN MEANS A CAR IS AFTER YOU");
         }
 
         private void Update()
@@ -86,6 +102,8 @@ namespace Game.Level2
                 Finish(End.TooLate);
                 return;
             }
+            if (_hud != null) _hud.SetTime(TimeLeft);
+            ScoreDistance();
 
             // Safe zone: slowly heal
             if (InSafeZone && Hits > 0)
@@ -114,6 +132,7 @@ namespace Game.Level2
 
             _lastHitTime = Time.time;
             Hits++;
+            _everHit = true;
             _push = push;
             _flash = 1f;
 
@@ -150,6 +169,27 @@ namespace Game.Level2
             if (end == End.Survived) GameManager.Instance?.Win();
             else GameManager.Instance?.GameOver();
             if (end == End.TooLate) _flash = 1f;
+            if (_hud == null) return;
+
+            bool survived = end == End.Survived;
+            if (survived)
+            {
+                GameScore.Set(RoundNumber, "DISTANCE", DistancePoints);
+                GameScore.Set(RoundNumber, "SHELTER", ShelterBonus);
+                GameScore.Set(RoundNumber, "TIME", Mathf.FloorToInt(TimeLeft) * PointsPerSecond);
+                GameScore.Set(RoundNumber, "HEALTH", Mathf.Max(0, maxHits - Hits) * PointsPerHealth);
+                if (!_everHit) GameScore.Set(RoundNumber, "NOT A SCRATCH", NoHitBonus);
+            }
+            _hud.ShowResult(survived, dim: true);
+        }
+
+        /// <summary>Points for the furthest point reached (running back and forth gives nothing).</summary>
+        private void ScoreDistance()
+        {
+            if (_player == null || _hud == null) return;
+            _furthest = Mathf.Max(_furthest, _player.transform.position.z);
+            float done = Mathf.InverseLerp(_startZ, _goalZ, _furthest);
+            GameScore.Set(RoundNumber, "DISTANCE", Mathf.FloorToInt(done * 100f) * (DistancePoints / 100));
         }
 
         private void HandleEndInput()
@@ -177,6 +217,7 @@ namespace Game.Level2
 
         private void OnGUI()
         {
+            if (GameManager.Instance != null && GameManager.Instance.State == GameState.Briefing) return;
             EnsureStyles();
             float w = Screen.width, h = Screen.height;
 
@@ -189,11 +230,6 @@ namespace Game.Level2
 
             if (_end == End.None)
             {
-                // Timer (top centre), red in the last 10 seconds
-                int secs = Mathf.CeilToInt(TimeLeft);
-                _big.normal.textColor = secs <= 10 ? new Color(1f, 0.25f, 0.2f) : Color.white;
-                Shadowed(new Rect(0, h * 0.02f, w, h * 0.1f), $"0:{secs:00}", _big);
-
                 // Hits (top left)
                 string marks = new string('■', Mathf.Max(0, maxHits - Hits)) + new string('□', Mathf.Min(Hits, maxHits));
                 _small.alignment = TextAnchor.UpperLeft;
@@ -215,7 +251,6 @@ namespace Game.Level2
             }
 
             // End screens
-            DrawRect(new Rect(0, 0, w, h), new Color(0f, 0f, 0f, Mathf.Clamp01((Time.unscaledTime - _endTime) * 0.8f) * 0.7f));
             string title = _end switch
             {
                 End.RunOver => "YOU GOT RUN OVER",

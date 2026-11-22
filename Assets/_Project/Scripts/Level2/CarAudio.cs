@@ -98,7 +98,7 @@ namespace Game.Level2
             var gm = GameManager.Instance;
             GameState state = gm != null ? gm.State : GameState.Playing;
 
-            bool paused = state == GameState.Paused;
+            bool paused = state == GameState.Paused || state == GameState.Briefing;
             if (paused != _paused)
             {
                 _paused = paused;

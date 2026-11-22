@@ -126,7 +126,7 @@ namespace Game.Level2
 
             if (_source == null) return;
 
-            bool paused = state == GameState.Paused;
+            bool paused = state == GameState.Paused || state == GameState.Briefing; // winds up when the round starts
             if (paused != _paused)
             {
                 _paused = paused;
