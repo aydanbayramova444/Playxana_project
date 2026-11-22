@@ -1,6 +1,7 @@
 using Game.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using UnityEngine.Video;
 
 namespace Game.UI
@@ -23,19 +24,44 @@ namespace Game.UI
 
         [SerializeField] private string skipHint = "SPACE — skip";
 
+        [Header("Old PlayStation look")]
+        [SerializeField] private bool oldPlayStationLook = true;
+        [Tooltip("Lines of the video picture. Lower = blurrier.")]
+        [Range(96, 480)] [SerializeField] private int videoLines = 216;
+        [Tooltip("0 = original colours, 1 = very blue.")]
+        [Range(0f, 1f)] [SerializeField] private float blueTint = 0.35f;
+        [Tooltip("Blocky 90s video compression.")]
+        [Range(0f, 1f)] [SerializeField] private float compression = 0.5f;
+
         private VideoPlayer _video;
+        private OldVideoScreen _screen;
+        private PixelLabel _hint;
         private float _elapsed;
         private bool _done;
-        private GUIStyle _style;
 
         private void Awake()
         {
             _video = GetComponent<VideoPlayer>();
             _video.playOnAwake = false;
             _video.isLooping = false;
-            _video.renderMode = VideoRenderMode.CameraNearPlane;
+            _video.renderMode = oldPlayStationLook ? VideoRenderMode.RenderTexture : VideoRenderMode.CameraNearPlane;
             if (_video.targetCamera == null) _video.targetCamera = Camera.main;
-            _video.aspectRatio = VideoAspectRatio.FitInside; // black bars instead of stretching
+            _video.aspectRatio = oldPlayStationLook
+                ? VideoAspectRatio.Stretch         // into our own texture of the same shape
+                : VideoAspectRatio.FitInside;      // black bars instead of stretching
+
+            var go = new GameObject("CutsceneCanvas", typeof(Canvas), typeof(CanvasScaler));
+            go.transform.SetParent(transform, false);
+            var canvas = go.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 20;
+            var scaler = go.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+
+            if (oldPlayStationLook) _screen = OldVideoScreen.Create(go.transform, _video, videoLines, blueTint, compression);
+            _hint = PixelLabel.Create(go.transform, "SkipHint", PixelFont.Small, 3, new Vector2(1, 0), new Vector2(-30, 24),
+                new Color(0.12f, 1f, 0.22f, 0.8f), 1f);
         }
 
         private void Start()
@@ -53,13 +79,25 @@ namespace Game.UI
                 Debug.LogWarning($"[Cutscene] Video error: {message} — going to the game.", this);
                 Finish();
             };
-            _video.Play();
+            if (_screen == null)
+            {
+                _video.Play();
+                return;
+            }
+            _video.prepareCompleted += _ =>
+            {
+                if (_done) return;
+                _screen.Begin();
+                _video.Play();
+            };
+            _video.Prepare();
         }
 
         private void Update()
         {
             if (_done) return;
             _elapsed += Time.unscaledDeltaTime;
+            if (_elapsed >= skipHintDelay) _hint.Set(skipHint.Replace("\u2014", "-"));
 
             var kb = Keyboard.current;
             var mouse = Mouse.current;
@@ -81,19 +119,6 @@ namespace Game.UI
                 return;
             }
             SceneLoader.Load(nextScene);
-        }
-
-        private void OnGUI()
-        {
-            if (_done || _elapsed < skipHintDelay) return;
-
-            _style ??= new GUIStyle(GUI.skin.label)
-            {
-                alignment = TextAnchor.LowerRight,
-                fontSize = Mathf.Max(14, Screen.height / 40),
-                normal = { textColor = new Color(1f, 1f, 1f, 0.75f) }
-            };
-            GUI.Label(new Rect(0, 0, Screen.width - 24, Screen.height - 18), skipHint, _style);
         }
     }
 }

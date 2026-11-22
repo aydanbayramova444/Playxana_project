@@ -67,6 +67,7 @@ namespace Game.UI
         private void Start()
         {
             if (GameManager.Instance != null) GameManager.Instance.SetState(GameState.MainMenu); // free cursor
+            GameScore.NewRun();
             _cancel = InputSystem.actions?.FindAction("UI/Cancel");
             if (heroImage == null) heroImage = Resources.Load<Sprite>("MenuHero");
 
@@ -265,6 +266,12 @@ namespace Game.UI
             var foot = Text(main, "Footer", footer, 30, WithAlpha(boneColor, 0.35f));
             foot.characterSpacing = 10;
             Place(foot.rectTransform, Vector2.zero, Vector2.zero, new Vector2(150, 45), new Vector2(900, 50));
+            if (GameScore.BestRun > 0)
+            {
+                var best = Text(main, "BestScore", $"BEST SCORE  {GameScore.BestRun}   RANK {GameScore.Rank(GameScore.BestRun)}", 30,
+                    new Color(0.12f, 1f, 0.22f), FontStyles.Bold);
+                Place(best.rectTransform, Vector2.zero, Vector2.zero, new Vector2(150, 95), new Vector2(900, 50));
+            }
 
             BuildHelp(root);
             SetLayer(canvasGo.transform, UiLayer);
