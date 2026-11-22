@@ -24,7 +24,7 @@ namespace Game.Gameplay
         private enum State { GoingToTarget, Grabbing, Escaping, Fleeing, Staggered, Down }
 
         [SerializeField] private float walkSpeed = 3.6f;
-        [SerializeField] private float escapeSpeed = 4.6f;    // player walks 5, sprints 8: you can catch them, barely
+        [SerializeField] private float escapeSpeed = 4.3f;    // player walks 5, sprints 8: you can catch them, barely
         [SerializeField] private float fleeSpeed = 6f;
         [SerializeField] private float grabTime = 1.2f;       // at a shelf: the window to stop them
         [SerializeField] private float floorGrabTime = 0.6f;  // snatching something off the floor is quicker
@@ -32,11 +32,11 @@ namespace Game.Gameplay
         [Tooltip("Hits it takes to stop this intruder (random, min..max)")]
         [SerializeField] private Vector2Int hitsToStop = new Vector2Int(3, 4);
         [Tooltip("After a hit they can't be hit again for this long (no spam-clicking them down)")]
-        [SerializeField] private float hitRecovery = 0.45f;
+        [SerializeField] private float hitRecovery = 0.35f;
         [Tooltip("How long a hit stuns them before they go back to stealing")]
         [SerializeField] private float staggerTime = 0.4f;
         [Tooltip("After a hit they jump sideways up to this far (harder to hit twice in a row)")]
-        [SerializeField] private float dodgeDistance = 1.1f;
+        [SerializeField] private float dodgeDistance = 0.85f;
         [Tooltip("Chance that the last hit knocks them down; otherwise they run away scared")]
         [Range(0f, 1f)] [SerializeField] private float knockDownChance = 0.5f;
 
