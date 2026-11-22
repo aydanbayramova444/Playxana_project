@@ -1804,7 +1804,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 82469e9f6845c834b80363b0aeabf8d9, type: 2}
-  stock: 9
+  stock: 5
   itemsPerBoard: 5
   width: 1.6
   height: 1.8
@@ -5405,7 +5405,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 9a1836e74f6ada0448d186da6df9e307, type: 2}
-  stock: 8
+  stock: 4
   itemsPerBoard: 4
   width: 1.6
   height: 1.8
@@ -5521,7 +5521,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 1aa16dc9195adfc46be91617a94d0a0a, type: 2}
-  stock: 23
+  stock: 6
   itemsPerBoard: 4
   width: 1.6
   height: 1.8
@@ -8613,7 +8613,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 094ed82df4a0344108512f051e1c67af, type: 2}
-  stock: 6
+  stock: 3
   itemsPerBoard: 4
   width: 1.6
   height: 1.8
@@ -9138,7 +9138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: b4efd4a58299ffd49a6b26ef56f0b47e, type: 2}
-  stock: 10
+  stock: 5
   itemsPerBoard: 4
   width: 1.6
   height: 1.8
@@ -9995,7 +9995,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: fe21a6b7a598bfb438d979cd430fb581, type: 2}
-  stock: 12
+  stock: 6
   itemsPerBoard: 4
   width: 1.6
   height: 1.8
@@ -10053,7 +10053,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 7f5bb63f20a4cfd46947548d81990cdd, type: 2}
-  stock: 11
+  stock: 6
   itemsPerBoard: 4
   width: 1.6
   height: 1.8
@@ -16675,7 +16675,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 276ad98681ff73547933bd4db6a916c9, type: 2}
-  stock: 15
+  stock: 6
   itemsPerBoard: 4
   width: 1.6
   height: 1.8
@@ -16827,7 +16827,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 242b1bb714efd48faa6108f5bf737a08, type: 2}
-  stock: 4
+  stock: 3
   itemsPerBoard: 4
   width: 1.6
   height: 1.8
@@ -18144,7 +18144,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 829315c182db1824097a94d6744b9f1a, type: 2}
-  stock: 13
+  stock: 6
   itemsPerBoard: 4
   width: 1.6
   height: 1.83
@@ -22514,7 +22514,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 64fd2861bcb904ed68ba8efb7058f55e, type: 2}
-  stock: 42
+  stock: 6
   itemsPerBoard: 10
   width: 1.6
   height: 1.8
@@ -28794,7 +28794,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 1c24ab4830e9b4b2b8dbe60094ca42b3, type: 2}
-  stock: 15
+  stock: 6
   itemsPerBoard: 4
   width: 1.6
   height: 1.8
@@ -28852,7 +28852,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Gameplay.Shelf
   item: {fileID: 11400000, guid: 032de5fc7da2a874c81a17f1730488b6, type: 2}
-  stock: 6
+  stock: 3
   itemsPerBoard: 4
   width: 1.6
   height: 1.8

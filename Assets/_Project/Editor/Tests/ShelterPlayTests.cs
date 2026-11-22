@@ -142,7 +142,7 @@ namespace Game.EditorTests
         }
 
         [UnityTest]
-        public IEnumerator Intruder_TakesTwoOrThreeHits_ThenDownOrRunsAway()
+        public IEnumerator Intruder_TakesThreeOrFourHits_WithRecoveryBetween_ThenDownOrRunsAway()
         {
             EditorSceneManager.OpenScene(ScenePath);
             yield return new EnterPlayMode();
@@ -153,26 +153,38 @@ namespace Game.EditorTests
 
             int checkedThieves = 0;
             float start = Time.time;
-            while (checkedThieves < 4 && Time.time - start < 40f)
+            while (checkedThieves < 4 && Time.time - start < 60f)
             {
-                foreach (var thief in Object.FindObjectsByType<ShelterIntruder>())
+                ShelterIntruder thief = null;
+                foreach (var i in Object.FindObjectsByType<ShelterIntruder>())
+                    if (!i.IsStopped && i.Health == i.MaxHealth) thief = i;
+                if (thief == null) { yield return null; continue; }
+
+                int max = thief.MaxHealth, hits = 0;
+                Assert.That(max, Is.InRange(3, 4), "Intruders should take 3 or 4 hits.");
+                Assert.AreEqual(UnityEngine.AI.ObstacleAvoidanceType.NoObstacleAvoidance,
+                    thief.GetComponent<UnityEngine.AI.NavMeshAgent>().obstacleAvoidanceType,
+                    "Intruders should slip past each other, not wait in the corridor.");
+                while (thief != null && !thief.IsStopped && hits < 8)
                 {
-                    if (thief.IsStopped || thief.Health != thief.MaxHealth) continue;
-                    int max = thief.MaxHealth, hits = 0;
-                    Assert.That(max, Is.InRange(2, 3), "Intruders should take 2 or 3 hits.");
-                    while (!thief.IsStopped && hits < 5)
+                    thief.Interact(player);
+                    hits++;
+                    if (hits < max)
                     {
-                        thief.Interact(player);
-                        hits++;
-                        if (hits < max) Assert.IsFalse(thief.IsStopped, $"Stopped after {hits} hit(s) but has {max} health.");
+                        Assert.IsFalse(thief.IsStopped, $"Stopped after {hits} hit(s) but has {max} health.");
+                        int hp = thief.Health;
+                        thief.Interact(player); // spam-click right away: they're recovering, it must miss
+                        Assert.AreEqual(hp, thief.Health, "A second hit right after the first should miss.");
+                        float t = Time.time;
+                        while (thief != null && !thief.CanBeHit && Time.time - t < 2f) yield return null;
                     }
-                    Assert.AreEqual(max, hits, "Should stop exactly on the last hit.");
-                    Assert.IsTrue(thief.IsDown || thief.IsFleeing, "After the last hit: down or running away.");
-                    checkedThieves++;
                 }
+                Assert.AreEqual(max, hits, "Should stop exactly on the last hit.");
+                Assert.IsTrue(thief.IsDown || thief.IsFleeing, "After the last hit: down or running away.");
+                checkedThieves++;
                 yield return null;
             }
-            Debug.Log($"[ShelterTest] Hit test: {checkedThieves} intruders each stopped after 2-3 hits");
+            Debug.Log($"[ShelterTest] Hit test: {checkedThieves} intruders each stopped after 3-4 hits");
             Assert.GreaterOrEqual(checkedThieves, 4);
 
             Time.timeScale = 1f;

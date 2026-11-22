@@ -11,7 +11,7 @@ namespace Game.Gameplay
     ///   Enter → go for a product: one lying on the FLOOR (dropped by someone else) or one on a shelf →
     ///   grab it → run back to the exit. Out of the door with it → it's gone for good (stolen).
     ///
-    /// The player hits them (left-click bat swing or E). Every intruder takes 2–3 hits:
+    /// The player hits them (left-click bat swing or E). Every intruder takes 3–4 hits (and is untouchable for a moment after each one):
     ///   each hit staggers them, and if they carry something they DROP it (others may grab it!);
     ///   the last hit either knocks them DOWN or makes them RUN AWAY scared.
     ///
@@ -23,14 +23,20 @@ namespace Game.Gameplay
     {
         private enum State { GoingToTarget, Grabbing, Escaping, Fleeing, Staggered, Down }
 
-        [SerializeField] private float walkSpeed = 3.0f;
-        [SerializeField] private float escapeSpeed = 3.8f;    // player walks 5, sprints 8: you can catch them
+        [SerializeField] private float walkSpeed = 3.6f;
+        [SerializeField] private float escapeSpeed = 4.6f;    // player walks 5, sprints 8: you can catch them, barely
         [SerializeField] private float fleeSpeed = 6f;
         [SerializeField] private float grabTime = 1.2f;       // at a shelf: the window to stop them
         [SerializeField] private float floorGrabTime = 0.6f;  // snatching something off the floor is quicker
         [SerializeField] private float reachDistance = 1.3f;
         [Tooltip("Hits it takes to stop this intruder (random, min..max)")]
-        [SerializeField] private Vector2Int hitsToStop = new Vector2Int(2, 3);
+        [SerializeField] private Vector2Int hitsToStop = new Vector2Int(3, 4);
+        [Tooltip("After a hit they can't be hit again for this long (no spam-clicking them down)")]
+        [SerializeField] private float hitRecovery = 0.45f;
+        [Tooltip("How long a hit stuns them before they go back to stealing")]
+        [SerializeField] private float staggerTime = 0.4f;
+        [Tooltip("After a hit they jump sideways up to this far (harder to hit twice in a row)")]
+        [SerializeField] private float dodgeDistance = 1.1f;
         [Tooltip("Chance that the last hit knocks them down; otherwise they run away scared")]
         [Range(0f, 1f)] [SerializeField] private float knockDownChance = 0.5f;
 
@@ -45,6 +51,16 @@ namespace Game.Gameplay
         public bool IsFleeing => _state == State.Fleeing;
         /// <summary>Out of the fight: knocked down, running away scared, or gone.</summary>
         public bool IsStopped => _done || _state == State.Down || _state == State.Fleeing;
+        /// <summary>Reaching into a shelf right now (the window to stop them).</summary>
+        public bool IsGrabbing => _state == State.Grabbing;
+        /// <summary>The shelf this intruder last took something from, and the frame it happened (for checks / tests).</summary>
+        public Shelf LastTakenFrom { get; private set; }
+        public int LastTakeFrame { get; private set; } = -1;
+        public float ReachDistance => reachDistance;
+
+        // The baked NavMesh also covers the ROOFS of the bunker, corridor and tunnel. An intruder up there walks
+        // unseen above the room — they must always stay on the floor (anything higher than this is a roof).
+        public const float FloorMaxY = 1.0f;
 
         private NavMeshAgent _agent;
         private Transform _hand, _body;
@@ -52,13 +68,18 @@ namespace Game.Gameplay
         private State _state;
         private Shelf _shelf;
         private Game.Interaction.Pickup _floorItem, _carried;
+        private Shelf _carriedHome; // the shelf what we carry came from: a dropped supply goes back there
         private float _timer, _repathAt, _giveUpAt;
         private int _health, _maxHealth;
         private bool _done;
+        private float _hittableAt;
 
         // ---------- Interaction: the player hits them (E or bat) ----------
 
-        public override bool CanInteract(Game.Interaction.PlayerInteractor player) => !IsStopped;
+        public override bool CanInteract(Game.Interaction.PlayerInteractor player) => !IsStopped && CanBeHit;
+
+        /// <summary>False for a moment right after a hit (they're recovering — the next swing misses).</summary>
+        public bool CanBeHit => Time.time >= _hittableAt;
 
         public override string GetPrompt(Game.Interaction.PlayerInteractor player) => "Hit";
 
@@ -69,21 +90,28 @@ namespace Game.Gameplay
         /// <summary>One hit from the player standing at <paramref name="from"/>.</summary>
         public void TakeHit(Vector3 from)
         {
-            if (IsStopped) return;
+            if (IsStopped || !CanBeHit) return;
             _health--;
+            _hittableAt = Time.time + hitRecovery;
 
             Vector3 away = transform.position - from;
             away.y = 0f;
             away = away.sqrMagnitude > 0.001f ? away.normalized : -transform.forward;
 
             bool dropped = false;
-            if (_carried != null) // they let go of it — it's on the floor now, anyone can grab it
+            if (_carried != null) // they let go of it — it's on the floor now, glowing: pick it up to put it back
             {
                 _carried.KnockByNpc(away * 1.5f + Vector3.up * 2.5f);
+                LostSupply.Mark(_carried, _carriedHome, this);
                 _carried = null;
+                _carriedHome = null;
                 dropped = true;
             }
-            if (_agent.isOnNavMesh) _agent.Move(away * 0.6f); // knocked back a step
+            if (_agent.isOnNavMesh) // knocked back a step and dodging sideways: the next hit isn't free
+            {
+                Vector3 side = Vector3.Cross(Vector3.up, away) * (Random.value < 0.5f ? -1f : 1f);
+                _agent.Move(away * 0.6f + side * Random.Range(dodgeDistance * 0.5f, dodgeDistance));
+            }
 
             if (_health <= 0)
             {
@@ -96,7 +124,7 @@ namespace Game.Gameplay
 
             if (Director != null) Director.OnIntruderHit(this, dropped);
             _state = State.Staggered;
-            _timer = 0.7f;
+            _timer = staggerTime;
             _agent.isStopped = true;
             StartCoroutine(Flinch(away));
         }
@@ -110,7 +138,11 @@ namespace Game.Gameplay
             _agent.radius = 0.3f;
             _agent.height = 1.8f;
             _agent.angularSpeed = 540f;
-            _agent.acceleration = 14f;
+            _agent.acceleration = 20f;
+            // No avoidance between intruders: in the narrow corridor / tunnel they used to stop and wait
+            // for each other (one coming in, one running out). Now they slip past each other.
+            _agent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
+            _agent.autoBraking = false; // don't slow down near every corner / target
 
             _maxHealth = _health = Random.Range(hitsToStop.x, hitsToStop.y + 1);
 
@@ -153,13 +185,16 @@ namespace Game.Gameplay
                 enabled = false;
                 return;
             }
+            KeepOnFloor();
             PickTarget();
         }
 
         private void Update()
         {
-            if (_glow != null) _glow.enabled = _carried != null && _state != State.Down;
+            // Red glow while reaching into a shelf and while carrying your supplies: thefts are easy to see
+            if (_glow != null) _glow.enabled = (_carried != null || _state == State.Grabbing) && _state != State.Down;
             if (_done || _state == State.Down || !_agent.isOnNavMesh) return;
+            if (KeepOnFloor()) { PickTarget(); return; }
 
             switch (_state)
             {
@@ -167,7 +202,7 @@ namespace Game.Gameplay
                     if (Time.time > _giveUpAt) { PickTarget(); return; } // can't reach it: try something else
                     if (_floorItem != null)
                     {
-                        if (!IsLoose(_floorItem)) { PickTarget(); return; } // someone (the player!) took it
+                        if (!CanTake(_floorItem)) { PickTarget(); return; } // someone (the player!) took it
                         Vector3 p = _floorItem.transform.position;
                         if (Flat(transform.position - p) < reachDistance * 0.9f) StartGrab(p, floorGrabTime);
                         else if (Time.time > _repathAt) { GoTo(p); _repathAt = Time.time + 0.5f; } // it may still be rolling
@@ -175,7 +210,7 @@ namespace Game.Gameplay
                     else if (_shelf != null)
                     {
                         if (_shelf.IsEmpty) { PickTarget(); return; }
-                        if (Flat(transform.position - _shelf.FrontPoint) < reachDistance)
+                        if (CanReach(_shelf))
                             StartGrab(_shelf.transform.position, grabTime);
                     }
                     else PickTarget();
@@ -184,10 +219,26 @@ namespace Game.Gameplay
                 case State.Grabbing:
                     if ((_timer -= Time.deltaTime) > 0f) return;
                     Game.Interaction.Pickup item = null;
-                    bool fromFloor = _floorItem != null && IsLoose(_floorItem);
-                    if (fromFloor) item = _floorItem;
-                    else if (_shelf != null) item = _shelf.TakeOneItem();
+                    bool fromFloor = _floorItem != null && CanTake(_floorItem);
+                    Shelf home = _shelf;
+                    if (fromFloor)
+                    {
+                        item = _floorItem;
+                        var lost = item.GetComponent<LostSupply>();
+                        if (lost != null)
+                        {
+                            home = lost.Home;
+                            lost.Clear(); // no glow on a thief's shoulder (they glow red themselves)
+                        }
+                    }
+                    else if (_shelf != null)
+                    {
+                        LastTakenFrom = _shelf;
+                        LastTakeFrame = Time.frameCount;
+                        item = _shelf.TakeOneItem();
+                    }
                     if (item == null) { PickTarget(); return; }
+                    _carriedHome = home;
                     item.TakeByNpc(_hand);
                     _carried = item;
                     _floorItem = null;
@@ -219,7 +270,7 @@ namespace Game.Gameplay
             float best = float.MaxValue;
             foreach (var p in FindObjectsByType<Game.Interaction.Pickup>())
             {
-                if (!IsLoose(p)) continue;
+                if (!CanTake(p)) continue;
                 float d = Flat(p.transform.position - transform.position);
                 if (d < best) { best = d; nearest = p; }
             }
@@ -237,7 +288,7 @@ namespace Game.Gameplay
             {
                 _shelf = shelves[Random.Range(0, shelves.Count)];
                 Vector3 stand = _shelf.FrontPoint;
-                if (NavMesh.SamplePosition(stand, out NavMeshHit hit, 2f, NavMesh.AllAreas)) stand = hit.position;
+                FloorPoint(stand, 2f, out stand);
                 GoTo(stand);
             }
             else
@@ -254,8 +305,39 @@ namespace Game.Gameplay
 
         private void GoTo(Vector3 p)
         {
-            if (NavMesh.SamplePosition(p, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)) p = hit.position;
+            if (FloorPoint(p, 1.5f, out Vector3 floor)) p = floor;
             _agent.SetDestination(p);
+        }
+
+        /// <summary>Standing right in front of the shelf, on the same floor (not on the roof above it).</summary>
+        private bool CanReach(Shelf shelf) =>
+            Flat(transform.position - shelf.FrontPoint) < reachDistance &&
+            Mathf.Abs(transform.position.y - shelf.transform.position.y) < FloorMaxY;
+
+        /// <summary>The nearest NavMesh point to <paramref name="p"/> that is on the floor (never on a roof).</summary>
+        public static bool FloorPoint(Vector3 p, float radius, out Vector3 floor)
+        {
+            floor = p;
+            Vector3 low = new Vector3(p.x, Mathf.Min(p.y, 0.05f), p.z);
+            for (float r = 0.25f; r <= radius + 0.001f; r *= 2f)
+                if (NavMesh.SamplePosition(low, out NavMeshHit hit, r, NavMesh.AllAreas) && hit.position.y < FloorMaxY)
+                {
+                    floor = hit.position;
+                    return true;
+                }
+            return false;
+        }
+
+        /// <summary>Somehow up on a roof (spawned there / pushed there)? Back down onto the floor. True if moved.</summary>
+        private bool KeepOnFloor()
+        {
+            if (transform.position.y < FloorMaxY) return false;
+            Vector3 from = transform.position;
+            Vector3 to;
+            if (!FloorPoint(from, 3f, out to) && !(Exit != null && FloorPoint(Exit.position, 3f, out to))) return false;
+            Debug.LogWarning($"[Shelter] {name} was up on a roof at {from} — moved down to the floor at {to}.", this);
+            _agent.Warp(to);
+            return true;
         }
 
         private void StartGrab(Vector3 lookAt, float time)
@@ -268,6 +350,14 @@ namespace Game.Gameplay
 
         /// <summary>A product lying around: not in anyone's hands, not on a shelf.</summary>
         private static bool IsLoose(Game.Interaction.Pickup p) => p != null && !p.IsHeld && p.CurrentSlot == null;
+
+        /// <summary>Loose, and not protected right after a thief dropped it (<see cref="LostSupply"/>).</summary>
+        private bool CanTake(Game.Interaction.Pickup p)
+        {
+            if (!IsLoose(p)) return false;
+            var lost = p.GetComponent<LostSupply>();
+            return lost == null || lost.CanBeTakenBy(this);
+        }
 
         private void Flee() => GoToExit(fleeSpeed, State.Fleeing);
 

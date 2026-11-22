@@ -56,6 +56,8 @@ namespace Game.Gameplay
         const float BaseHeight = 0.12f;
 
         private ItemSlot _slot;
+        private System.Collections.Generic.List<ItemData> _contents; // set by Fill(): exactly these products
+        private bool _started;
         private TextMeshPro _label, _count; // name (left) and stock (right) on the sign
 
         // ---------- Public API (for NPCs, UI ...) ----------
@@ -78,13 +80,39 @@ namespace Game.Gameplay
         /// <summary>NPC takes one item off the shelf and gets it (to carry or knock over). Null if empty.</summary>
         public Game.Interaction.Pickup TakeOneItem() => _slot != null ? _slot.TakeLast() : null;
 
+        /// <summary>Is there room for this item here, and does the shelf take it?</summary>
+        public bool CanTake(Game.Interaction.Pickup item) => _slot != null && item != null && !_slot.IsFull && _slot.Accepts(item);
+
+        /// <summary>Puts an item back on a free spot (Shelter: a supply you got back from a thief).</summary>
+        public bool PutBack(Game.Interaction.Pickup item) => CanTake(item) && _slot.Place(item);
+
         /// <summary>Where an NPC stands to reach the shelf: on the floor in front of it.</summary>
         public Vector3 FrontPoint => transform.position + transform.forward * (depth / 2f + 0.6f);
+
+        /// <summary>
+        /// Replace what the shelf starts with (call BEFORE its Start, e.g. from another script's Awake).
+        /// <paramref name="mainItem"/> = what the sign says and what it accepts; null = mixed shelf
+        /// ("Supplies", accepts anything). <paramref name="contents"/> = the products put on it, in order.
+        /// Used by the Shelter: the shelves hold what the player carried there.
+        /// </summary>
+        public void Fill(ItemData mainItem, System.Collections.Generic.IList<ItemData> contents)
+        {
+            if (_started)
+            {
+                Debug.LogWarning($"[Shelf] '{name}': Fill() after Start is ignored.", this);
+                return;
+            }
+            item = mainItem;
+            _contents = contents != null ? new System.Collections.Generic.List<ItemData>(contents)
+                                         : new System.Collections.Generic.List<ItemData>();
+            stock = _contents.Count;
+        }
 
         // ---------- Unity ----------
 
         private void Start()
         {
+            _started = true;
             BuildFrame();
 
             // The shelf is built on Play, so the baked NavMesh doesn't know it: cut it out at runtime
@@ -101,6 +129,9 @@ namespace Game.Gameplay
             _slot.ItemPlaced += (_, __) => OnStockChanged();
             _slot.ItemRemoved += (_, item) =>
             {
+                // Every product leaving a shelf is logged: the Console's stack trace shows exactly who took it.
+                if (lockItemsOnShelf) // Shelter racks only (the store has lots of normal traffic)
+                    Debug.Log($"[Shelf] {name}: {(item != null ? item.ItemId : "?")} left the shelf ({Stock} left)", this);
                 if (item != null) item.enabled = true; // off the shelf (dropped / knocked) → can be picked up again
                 OnStockChanged();
             };
@@ -254,6 +285,11 @@ namespace Game.Gameplay
         /// <summary>Puts `stock` copies of the product on the spots.</summary>
         private void SpawnItems()
         {
+            if (_contents != null)
+            {
+                SpawnContents();
+                return;
+            }
             if (item == null) return; // empty shelf: the player fills it
             if (item.prefab == null)
             {
@@ -273,6 +309,27 @@ namespace Game.Gameplay
                 GameObject go = Instantiate(item.prefab);
                 go.name = $"{item.id}_{i}";
                 _slot.Place(go.GetComponent<Game.Interaction.Pickup>()); // snaps onto the next free spot, stays put
+            }
+        }
+
+        /// <summary>Puts the products given to <see cref="Fill"/> on the spots.</summary>
+        private void SpawnContents()
+        {
+            int count = Mathf.Min(_contents.Count, Capacity);
+            for (int i = 0; i < count; i++)
+            {
+                ItemData product = _contents[i];
+                if (product == null || product.prefab == null) continue;
+                GameObject go = Instantiate(product.prefab);
+                go.name = $"{product.id}_{i}";
+                var pickup = go.GetComponent<Game.Interaction.Pickup>();
+                if (pickup == null)
+                {
+                    Debug.LogWarning($"[Shelf] Prefab of '{product.id}' has no Game.Interaction.Pickup.", this);
+                    Destroy(go);
+                    continue;
+                }
+                _slot.Place(pickup);
             }
         }
 
@@ -347,7 +404,7 @@ namespace Game.Gameplay
             if (_label == null) return;
             if (item == null)
             {
-                _label.text = "Empty shelf";
+                _label.text = _contents != null ? "Supplies" : "Empty shelf";
                 _count.text = $"{Stock}/{Capacity}";
                 return;
             }

@@ -55,7 +55,10 @@ namespace Game.Core
 
         private void Update()
         {
-            if (_pauseAction != null && _pauseAction.WasPressedThisFrame())
+            bool pressed = (_pauseAction != null && _pauseAction.WasPressedThisFrame())
+                           || (Keyboard.current != null && Keyboard.current.pKey.wasPressedThisFrame);
+            // Only in a round (there's a player): ESC in menus / cutscenes means "back" / "skip" there.
+            if (pressed && FindAnyObjectByType<Game.Player.PlayerController>() != null)
                 TogglePause();
         }
 

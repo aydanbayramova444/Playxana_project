@@ -13,7 +13,8 @@ namespace Game.Gameplay
 {
     /// <summary>
     /// Level 3 — The Shelter. Runs the whole round:
-    ///   - counts your supplies (everything on the Shelf objects in the scene when the round starts);
+    ///   - puts what you carried through the street (<see cref="RunInventory"/>) on the Shelf objects
+    ///     (playing the scene on its own keeps the shelves as set up in the scene), then counts them;
     ///   - sends survivors (<see cref="ShelterIntruder"/>) in through the entrance, faster and faster;
     ///   - LOSE: every supply has been stolen.   WIN: you held out until the timer ran out.
     ///   - HUD (supplies + time left + messages) and the end screen (TRY AGAIN / MAIN MENU) are built in code.
@@ -45,6 +46,16 @@ namespace Game.Gameplay
         [Header("Atmosphere")]
         [Tooltip("Ceiling lamps that stutter now and then")]
         [SerializeField] private Light[] flickerLights;
+
+        [Header("Brightness (the bunker was too dark to see)")]
+        [Tooltip("Flat ambient light of the room, set on Play (the scene's own value is much darker)")]
+        [SerializeField] private Color ambientLight = new Color(0.40f, 0.40f, 0.36f);
+        [Tooltip("Ceiling lamps are this many times brighter than in the scene")]
+        [SerializeField] private float lampBoost = 1.6f;
+        [Tooltip("Fog starts / ends this far away (metres): things fade into darkness later")]
+        [SerializeField] private Vector2 fogRange = new Vector2(7f, 28f);
+        [Tooltip("Screen: brightens the dark parts of the picture (0 = as is)")]
+        [Range(0f, 1f)] [SerializeField] private float screenLift = 0.35f;
 
         [Header("Bat (scare thieves off)")]
         [Tooltip("Left click swings the bat; a thief within this distance in front of you runs off")]
@@ -92,6 +103,110 @@ namespace Game.Gameplay
 
         // ---------- Unity ----------
 
+        // Before any Shelf.Start: the shelves must be filled before they build their products.
+        private void Awake()
+        {
+            StockShelvesFromBag();
+            Brighten(); // before Start reads the lamps' intensity for the flicker
+        }
+
+        // The bunker is seen without the old-TV (CRT) lines and curve; the PS1 pixels stay.
+        private void OnEnable()
+        {
+            ScreenLook.CrtOff = true;
+            ScreenLook.Lift = screenLift;
+        }
+
+        private void OnDisable()
+        {
+            ScreenLook.CrtOff = false;
+            ScreenLook.Lift = 0f;
+        }
+
+        /// <summary>Lighter room: ambient light, lamps and fog (only while playing; the scene file is untouched).</summary>
+        private void Brighten()
+        {
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = ambientLight;
+            RenderSettings.fogStartDistance = fogRange.x;
+            RenderSettings.fogEndDistance = fogRange.y;
+            if (flickerLights == null) return;
+            foreach (var l in flickerLights) if (l != null) l.intensity *= lampBoost;
+        }
+
+        /// <summary>
+        /// The shelves hold exactly what the player brought:
+        ///   1. a shelf keeps its product if it's in the bag (SOLD OUT if you didn't bring / lost it);
+        ///   2. other products take the shelves nobody uses, one product per shelf;
+        ///   3. whatever is still left goes on the emptiest shelves, which become mixed "Supplies" shelves.
+        /// Nothing is lost unless every shelf is full.
+        /// Skipped when the run didn't come through Level 2 (Shelter opened on its own in the editor).
+        /// </summary>
+        private void StockShelvesFromBag()
+        {
+            if (!RunInventory.HasCheckpoint(2)) return;
+
+            var shelves = new List<Shelf>(FindObjectsByType<Shelf>());
+            shelves.Sort((a, b) => string.CompareOrdinal(a.name, b.name)); // same layout every time
+            if (shelves.Count == 0) return;
+
+            // The plan: what each shelf will say on its sign (null = mixed) and what goes on it
+            var sign = new Dictionary<Shelf, Game.Gameplay.ItemData>();
+            var goods = new Dictionary<Shelf, List<Game.Gameplay.ItemData>>();
+            foreach (var shelf in shelves)
+            {
+                sign[shelf] = shelf.Item;
+                goods[shelf] = new List<Game.Gameplay.ItemData>();
+            }
+
+            // What's left to place, by product
+            var left = new List<RunInventory.Stack>(RunInventory.Items);
+
+            void Put(Shelf shelf, int stackIndex)
+            {
+                var st = left[stackIndex];
+                int n = Mathf.Min(st.Count, shelf.Capacity - goods[shelf].Count);
+                for (int k = 0; k < n; k++) goods[shelf].Add(st.Item);
+                if (st.Count > n) left[stackIndex] = new RunInventory.Stack { Item = st.Item, Count = st.Count - n };
+                else left.RemoveAt(stackIndex);
+            }
+
+            // 1. Shelves whose product is in the bag keep it
+            var free = new List<Shelf>();
+            foreach (Shelf shelf in shelves)
+            {
+                int i = shelf.Item != null ? left.FindIndex(st => st.Item == shelf.Item) : -1;
+                if (i >= 0) Put(shelf, i);
+                else free.Add(shelf);
+            }
+
+            // 2. Other products take the unused shelves, one product each (the sign changes)
+            foreach (Shelf shelf in free)
+            {
+                if (left.Count == 0) break;
+                sign[shelf] = left[0].Item;
+                Put(shelf, 0);
+            }
+
+            // 3. Still something left: one by one onto the emptiest shelf, which becomes mixed
+            int lost = 0;
+            foreach (var st in left)
+                for (int k = 0; k < st.Count; k++)
+                {
+                    Shelf best = null;
+                    foreach (var shelf in shelves)
+                        if (goods[shelf].Count < shelf.Capacity && (best == null || goods[shelf].Count < goods[best].Count))
+                            best = shelf;
+                    if (best == null) { lost++; continue; }
+                    goods[best].Add(st.Item);
+                    if (sign[best] != st.Item) sign[best] = null;
+                }
+            if (lost > 0) Debug.LogWarning($"[Shelter] {lost} supplies didn't fit on the shelves.", this);
+
+            foreach (var shelf in shelves) shelf.Fill(sign[shelf], goods[shelf]);
+        }
+
+
         private IEnumerator Start()
         {
             if (GameManager.Instance != null) GameManager.Instance.StartGame(); // playing state, cursor locked
@@ -100,8 +215,8 @@ namespace Game.Gameplay
             BuildBat();
             _hud = Game.UI.RoundHud.Create(transform, RoundNumber, surviveSeconds, "DEFEND THE SHELTER",
                 $"PROTECT YOUR SUPPLIES FOR {Mathf.CeilToInt(surviveSeconds)} SECONDS.\n" +
-                "HIT THE THIEVES: 2-3 HITS STOP THEM.\n" +
-                "PICK UP WHAT THEY DROP AND PUT IT BACK.\n" +
+                "HIT THE THIEVES: 3-4 HITS STOP THEM. THEY DODGE.\n" +
+                "WHAT THEY DROP GLOWS: PICK IT UP AND IT GOES BACK ON THE SHELF.\n" +
                 "IF EVERYTHING IS STOLEN, YOU LOSE.",
                 "WASD MOVE   MOUSE LOOK   LEFT CLICK OR E HIT   E PICK UP / PUT BACK");
 
@@ -114,14 +229,26 @@ namespace Game.Gameplay
             yield return null;
 
             foreach (Shelf s in FindObjectsByType<Shelf>()) _total += s.Stock;
+            _timeLeft = surviveSeconds;
+            if (_total == 0 && RunInventory.HasCheckpoint(2))
+            {
+                // Everything was lost on the street: nothing to defend, the round is lost.
+                while (GameManager.Instance != null && GameManager.Instance.State == GameState.Briefing) yield return null;
+                Message("The shelves are empty...", 3f, Blood);
+                yield return new WaitForSeconds(2f); // look at the empty shelves first
+                EndRound(win: false, title: "YOU BROUGHT NOTHING",
+                    stats: "Everything you bought was lost on the street.\nThe shelves are empty.");
+                yield break;
+            }
             if (_total == 0) Debug.LogWarning("[Shelter] No supplies on the shelves — nothing to protect.", this);
 
-            _timeLeft = surviveSeconds;
             _nextSpawn = firstIntruderDelay;
             _running = true;
             GameAudio.Loop(Sfx.Drone, 0.22f); // low rumble of the bunker
             GameAudio.Loop(Sfx.Hum, 0.06f);   // the lamps
-            Message("Protect your supplies.\nLeft click or E: hit a thief. 2-3 hits stop them.", 5f);
+            Message(RunInventory.HasCheckpoint(2)
+                ? $"You made it here with {_total} supplies. Protect them.\nLeft click or E: hit a thief. 3-4 hits stop them."
+                : "Protect your supplies.\nLeft click or E: hit a thief. 3-4 hits stop them.", 5f);
             UpdateHud();
         }
 
@@ -160,17 +287,21 @@ namespace Game.Gameplay
 
         public void OnIntruderGrabbed(ShelterIntruder who, Game.Interaction.Pickup item, bool fromFloor)
         {
+            Debug.Log(fromFloor
+                ? $"[Shelter] {who.name} picked {item.ItemId} up off the floor at {who.transform.position}"
+                : $"[Shelter] {who.name} took {item.ItemId} from {(who.LastTakenFrom != null ? who.LastTakenFrom.name : "?")}, " +
+                  $"standing {(who.LastTakenFrom != null ? Vector3.Distance(who.transform.position, who.LastTakenFrom.FrontPoint) : -1f):0.0} m from its front", who);
             GameAudio.PlayAt(Sfx.Clatter, who.transform.position);
             Message(fromFloor ? $"Someone snatched {Pretty(item.ItemId)} off the floor!"
                               : $"Someone took {Pretty(item.ItemId)} off the shelf!", 2.5f, Blood);
         }
 
-        /// <summary>A hit that didn't finish them (they have 2–3 hits).</summary>
+        /// <summary>A hit that didn't finish them (they have 3–4 hits).</summary>
         public void OnIntruderHit(ShelterIntruder who, bool droppedItem)
         {
             Swing(); // pressing E on a thief also swings the bat
             GameAudio.PlayAt(Sfx.Hit, who.transform.position + Vector3.up);
-            Message(droppedItem ? "They dropped it! Grab it before someone else does." : "Hit!", 1.5f);
+            Message(droppedItem ? "They dropped it! Pick up the glowing item to put it back." : "Hit!", 1.5f);
         }
 
         /// <summary>The last hit: knocked down or running away scared.</summary>
@@ -181,6 +312,13 @@ namespace Game.Gameplay
             Swing();
             GameAudio.PlayAt(knockedDown ? Sfx.KnockDown : Sfx.Hit, who.transform.position + Vector3.up);
             Message(knockedDown ? "Down." : "Ran off scared.", 1.5f);
+        }
+
+        /// <summary>The player picked up a supply a thief dropped: it went straight back onto a shelf.</summary>
+        public void OnSupplyReturned(Game.Interaction.Pickup item)
+        {
+            GameAudio.PlayAt(Sfx.Register, item.transform.position, 0.6f);
+            Message($"{Pretty(item.ItemId)} is back on the shelf.", 2f);
         }
 
         public void OnSupplyStolen(ShelterIntruder who, string itemId)
@@ -225,7 +363,8 @@ namespace Game.Gameplay
             if (door == null) door = entrance;
             if (door == null) return;
             Vector3 pos = door.position + door.right * sideOffset;
-            if (NavMesh.SamplePosition(pos, out NavMeshHit hit, 3f, NavMesh.AllAreas)) pos = hit.position;
+            // On the floor only: the NavMesh also covers the roofs (a thief up there steals unseen through the ceiling)
+            if (!ShelterIntruder.FloorPoint(pos, 3f, out pos)) pos = door.position;
 
             var go = new GameObject("Intruder", typeof(NavMeshAgent), typeof(ShelterIntruder));
             go.transform.SetPositionAndRotation(pos, door.rotation);
@@ -238,7 +377,7 @@ namespace Game.Gameplay
             _intruders.Add(intruder);
         }
 
-        private void EndRound(bool win)
+        private void EndRound(bool win, string title = null, string stats = null)
         {
             if (_over) return;
             _over = true;
@@ -252,17 +391,17 @@ namespace Game.Gameplay
                 else GameManager.Instance.GameOver(); // both free the cursor for the end screen
             }
 
-            _endTitle.text = win ? winTitle : loseTitle;
+            _endTitle.text = title ?? (win ? winTitle : loseTitle);
             _endTitle.color = win ? Bone : Blood;
-            _endStats.text = win
+            _endStats.text = stats ?? (win
                 ? $"Supplies kept: {SuppliesLeft}/{_total}\nIntruders stopped: {_scared}"
-                : $"Held out for {Clock(surviveSeconds - _timeLeft)}\nIntruders stopped: {_scared}";
+                : $"Held out for {Clock(surviveSeconds - _timeLeft)}\nIntruders stopped: {_scared}");
             GameScore.Set(RoundNumber, "TIME HELD", Mathf.FloorToInt(surviveSeconds - _timeLeft) * PointsPerSecond);
             if (win)
             {
                 GameScore.Set(RoundNumber, "SURVIVED", SurviveBonus);
                 if (_total > 0) GameScore.Set(RoundNumber, "SUPPLIES", Mathf.RoundToInt(SuppliesPoints * SuppliesLeft / (float)_total));
-                if (_stolen == 0) GameScore.Set(RoundNumber, "NOTHING LOST", NothingLostBonus);
+                if (_stolen == 0 && _total > 0) GameScore.Set(RoundNumber, "NOTHING LOST", NothingLostBonus);
             }
             _hud.ShowResult(win);
             StartCoroutine(FadeIn(_endGroup, 1.2f));
@@ -425,8 +564,8 @@ namespace Game.Gameplay
             foreach (var hit in hits)
             {
                 var thief = hit.collider.GetComponentInParent<ShelterIntruder>();
-                if (thief == null) continue;
-                if (player != null && thief.CanInteract(player)) thief.Interact(player); // same as pressing E
+                if (thief == null || player == null || !thief.CanInteract(player)) continue; // recovering: try the next one
+                thief.Interact(player); // same as pressing E
                 return;
             }
         }
