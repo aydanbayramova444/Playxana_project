@@ -43,6 +43,40 @@ namespace Game.EditorTools
             ("batteries",   2, new Vector3( 6.45f, 0, 1.2f), -90f),
         };
 
+        /// <summary>
+        /// Bakes ONLY the floor level (everything below 2 m): with "All" the roofs of the bunker, corridor and
+        /// tunnel got NavMesh too, and intruders up there stole supplies unseen through the ceiling.
+        /// </summary>
+        static void BakeFloorNavMesh(NavMeshSurface surface)
+        {
+            surface.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+            surface.collectObjects = CollectObjects.Volume;
+            surface.center = new Vector3(3f, 0.75f, -3f);    // room x -7..7, tunnel to x 13.3; corridor to z -11.5
+            surface.size = new Vector3(22f, 2.5f, 18f);     // y -0.5 .. 2.0: floor, crates and tables, no roofs
+            surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
+            surface.BuildNavMesh();
+            EnsureFolder(NavFolder);
+            string navPath = $"{NavFolder}/Shelter_NavMesh.asset";
+            AssetDatabase.DeleteAsset(navPath);
+            AssetDatabase.CreateAsset(surface.navMeshData, navPath);
+        }
+
+        [MenuItem("Tools/Shelter/Rebake NavMesh (Floor Only)", priority = 81)]
+        public static void RebakeOpenScene()
+        {
+            var surface = Object.FindAnyObjectByType<NavMeshSurface>();
+            if (surface == null || EditorSceneManager.GetActiveScene().name != "Shelter")
+            {
+                EditorUtility.DisplayDialog("Shelter", "Open Scenes/Shelter.unity first.", "OK");
+                return;
+            }
+            BakeFloorNavMesh(surface);
+            EditorUtility.SetDirty(surface);
+            EditorSceneManager.MarkSceneDirty(surface.gameObject.scene);
+            EditorSceneManager.SaveScene(surface.gameObject.scene);
+            Debug.Log("[Shelter] NavMesh rebaked: floor only, no roofs.");
+        }
+
         [MenuItem("Tools/Shelter/Create Shelter Scene (Level 3)", priority = 80)]
         public static void Create()
         {
@@ -168,14 +202,7 @@ namespace Game.EditorTools
 
             // ---------- NavMesh (before shelves and player: shelves cut themselves out at runtime) ----------
             var navGo = new GameObject("ShelterNavMesh");
-            var surface = navGo.AddComponent<NavMeshSurface>();
-            surface.collectObjects = CollectObjects.All;
-            surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
-            surface.BuildNavMesh();
-            EnsureFolder(NavFolder);
-            string navPath = $"{NavFolder}/Shelter_NavMesh.asset";
-            AssetDatabase.DeleteAsset(navPath);
-            AssetDatabase.CreateAsset(surface.navMeshData, navPath);
+            BakeFloorNavMesh(navGo.AddComponent<NavMeshSurface>());
 
             // ---------- Supplies ----------
             var shelves = Group(room, "SupplyShelves");

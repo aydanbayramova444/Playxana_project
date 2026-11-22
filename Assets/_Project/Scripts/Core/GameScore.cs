@@ -50,10 +50,11 @@ namespace Game.Core
                 Cleared[i] = false;
             }
             NewRunRecord = NewRoundRecord = false;
+            RunInventory.StartRound(round); // retrying a round also gives back the bag it started with
         }
 
         /// <summary>True only the first time in a run: retrying a round skips its briefing.</summary>
-        public static bool TakeBriefing(int round) => Briefed.Add(round);
+        public static bool TakeBriefing(int round) => Briefed.Add(round) && !DevSettings.SkipBriefings;
 
         public static IReadOnlyList<Line> LinesOf(int round) => Lines[round - 1];
         public static bool IsCleared(int round) => Cleared[round - 1];

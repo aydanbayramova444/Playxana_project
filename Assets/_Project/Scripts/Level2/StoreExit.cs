@@ -46,7 +46,17 @@ namespace Game.Level2
                 return;
             }
             _loading = true;
+            PackTheBag();
             SceneLoader.Load(nextScene);
+        }
+
+        /// <summary>Everything counted in the cart goes into the player's bag for round 2.</summary>
+        private void PackTheBag()
+        {
+            RunInventory.Clear();
+            if (_tracker == null) return;
+            foreach (var entry in _tracker.Entries)
+                RunInventory.Add(entry.Item, entry.Collected);
         }
 
         private void Say(string text, float seconds)
