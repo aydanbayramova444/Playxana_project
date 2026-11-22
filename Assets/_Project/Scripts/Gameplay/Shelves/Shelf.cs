@@ -40,6 +40,13 @@ namespace Game.Gameplay
         [Header("Look")]
         [SerializeField] private Color frameColor = new Color(0.82f, 0.84f, 0.86f); // light metal
         [SerializeField] private Color boardColor = new Color(0.62f, 0.45f, 0.28f); // wood
+        [Tooltip("Products on the shelf can't be picked up by the player (E only puts things back). " +
+                 "NPCs can still take them; once off the shelf they can be picked up again. Used in the Shelter.")]
+        [SerializeField] private bool lockItemsOnShelf = false;
+
+        [Tooltip("Open military storage rack (4 posts, slatted shelves, cross-braced back) instead of a shop shelf")]
+        [SerializeField] private bool bunkerRack = false;
+
         [Tooltip("Sign on the top front of the shelf: product name + stock")]
         [SerializeField] private bool showLabel = true;
         [SerializeField] private Color signColor = new Color(0.10f, 0.10f, 0.11f);   // dark board
@@ -92,7 +99,11 @@ namespace Game.Gameplay
             if (showLabel) _label = CreateLabel();
             SpawnItems();
             _slot.ItemPlaced += (_, __) => OnStockChanged();
-            _slot.ItemRemoved += (_, __) => OnStockChanged();
+            _slot.ItemRemoved += (_, item) =>
+            {
+                if (item != null) item.enabled = true; // off the shelf (dropped / knocked) → can be picked up again
+                OnStockChanged();
+            };
             UpdateLabel();
         }
 
@@ -109,6 +120,7 @@ namespace Game.Gameplay
         {
             var root = new GameObject("Frame").transform;
             root.SetParent(transform, false);
+            if (bunkerRack) { BuildRack(root); return; }
 
             Material frame = MakeMaterial(frameColor);
             Material wood = MakeMaterial(boardColor);
@@ -133,6 +145,56 @@ namespace Game.Gameplay
                 if (i == levels) y = height - Thick / 2f;
                 Part(root, i == levels ? "Top" : $"Board_{i}", new Vector3(0, y, 0),
                     new Vector3(width - 2 * Thick, Thick, depth - Thick), wood);
+            }
+        }
+
+        /// <summary>
+        /// Bunker storage rack: 4 square posts, slatted boards on every level, X-braces on the back and sides,
+        /// all in worn military paint. Same size and levels as the shop shelf, so the products sit the same.
+        /// </summary>
+        private void BuildRack(Transform root)
+        {
+            Material paint = MakeMaterial(frameColor);
+            Material slats = MakeMaterial(boardColor);
+            Material dark = MakeMaterial(frameColor * 0.55f);
+            float halfW = width / 2f, halfD = depth / 2f, post = 0.05f;
+
+            foreach (float x in new[] { -halfW + post / 2f, halfW - post / 2f })
+            foreach (float z in new[] { -halfD + post / 2f, halfD - post / 2f })
+                Part(root, "Post", new Vector3(x, height / 2f, z), new Vector3(post, height, post), paint);
+
+            for (int i = 0; i <= levels; i++)
+            {
+                float y = (i == 0 ? BaseHeight : BoardTop(i)) - Thick / 2f;
+                if (i == levels) y = height - Thick / 2f;
+                // the board the items stand on (solid, so they don't fall through) + a lip at the front
+                Part(root, i == levels ? "Top" : $"Board_{i}", new Vector3(0, y, 0), new Vector3(width - post, Thick * 0.6f, depth - post), slats);
+                Part(root, "Lip", new Vector3(0, y + 0.02f, halfD - post / 2f), new Vector3(width - post, 0.06f, 0.02f), paint);
+                // slat gaps: thin dark lines across the board
+                for (int k = 1; k < 4; k++)
+                    Part(root, "Gap", new Vector3(0, y + Thick * 0.31f, -halfD + depth * k / 4f), new Vector3(width - post, 0.004f, 0.015f), dark);
+            }
+
+            // X-braces (thin bars) on the back and both sides
+            Brace(root, new Vector3(0, height / 2f, -halfD + post / 2f), width, height, Vector3.forward, dark);
+            Brace(root, new Vector3(-halfW + post / 2f, height / 2f, 0), depth, height, Vector3.right, dark);
+            Brace(root, new Vector3(halfW - post / 2f, height / 2f, 0), depth, height, Vector3.right, dark);
+        }
+
+        private static void Brace(Transform root, Vector3 centre, float w, float h, Vector3 normal, Material mat)
+        {
+            float len = Mathf.Sqrt(w * w + h * h), angle = Mathf.Atan2(h, w) * Mathf.Rad2Deg;
+            Quaternion face = Quaternion.LookRotation(normal);
+            foreach (float a in new[] { angle, -angle })
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = "Brace";
+                Object.Destroy(go.GetComponent<Collider>());
+                go.transform.SetParent(root, false);
+                go.transform.localPosition = centre;
+                go.transform.localRotation = face * Quaternion.Euler(0, 0, a);
+                go.transform.localScale = new Vector3(len, 0.025f, 0.012f);
+                go.GetComponent<Renderer>().sharedMaterial = mat;
             }
         }
 
@@ -186,7 +248,7 @@ namespace Game.Gameplay
 
             _slot = gameObject.AddComponent<ItemSlot>();
             string shelfName = item != null ? $"{item.displayName} shelf" : "Shelf";
-            _slot.Setup(shelfName, "Put on shelf:", "shelf", ItemId, spots, lockItems: false);
+            _slot.Setup(shelfName, "Put on shelf:", "shelf", ItemId, spots, lockItems: lockItemsOnShelf);
         }
 
         /// <summary>Puts `stock` copies of the product on the spots.</summary>

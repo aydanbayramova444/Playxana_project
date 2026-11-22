@@ -31,6 +31,7 @@ namespace Game.EditorTools
 
         // Room: x -7..7, z -5..5, 3 m high. Entrance corridor goes out of the front wall (z = -5) to z = -11.
         const float HalfW = 7f, HalfD = 5f, Height = 3f, Wall = 0.3f;
+        const float SideDoorZ = -1.5f; // second way in: maintenance tunnel out of the right wall
 
         // Supplies you carried here from the store: (item id, how many)
         static readonly (string id, int stock, Vector3 pos, float yaw)[] Supplies =
@@ -65,20 +66,31 @@ namespace Game.EditorTools
 
             // ---------- Room ----------
             var room = Group(null, "Shelter");
+            Material olive  = Mat("M_ShelterOlive",  $"{TexEnv}/T_PoleMetal.png", 2f, new Color(0.33f, 0.36f, 0.22f));
+            Material yellow = Mat("M_ShelterHazard", $"{TexEnv}/T_PoleMetal.png", 2f, new Color(0.85f, 0.7f, 0.1f));
+            Material black  = Mat("M_ShelterBlack",  $"{TexEnv}/T_Rubber.png",    2f, new Color(0.08f, 0.08f, 0.08f));
+            Material sand   = Mat("M_ShelterSand",   $"{TexEnv}/T_Rubber.png",    3f, new Color(0.55f, 0.48f, 0.33f));
+
             Box(room, "Floor", new Vector3(0, -0.1f, 0), new Vector3(2 * HalfW + 2 * Wall, 0.2f, 2 * HalfD + 2 * Wall), floor);
             Box(room, "Ceiling", new Vector3(0, Height + 0.1f, 0), new Vector3(2 * HalfW + 2 * Wall, 0.2f, 2 * HalfD + 2 * Wall), ceiling);
             Box(room, "Wall_Back", new Vector3(0, Height / 2, HalfD + Wall / 2), new Vector3(2 * HalfW + 2 * Wall, Height, Wall), wall);
             Box(room, "Wall_Left", new Vector3(-HalfW - Wall / 2, Height / 2, 0), new Vector3(Wall, Height, 2 * HalfD), wall);
-            Box(room, "Wall_Right", new Vector3(HalfW + Wall / 2, Height / 2, 0), new Vector3(Wall, Height, 2 * HalfD), wall);
+            // Right wall with a 2 m opening to the maintenance tunnel (second way in), centred at z = SideDoorZ
+            float lowLen = SideDoorZ - 1f + HalfD, highLen = HalfD - (SideDoorZ + 1f);
+            Box(room, "Wall_Right_Front", new Vector3(HalfW + Wall / 2, Height / 2, -HalfD + lowLen / 2), new Vector3(Wall, Height, lowLen), wall);
+            Box(room, "Wall_Right_Back", new Vector3(HalfW + Wall / 2, Height / 2, HalfD - highLen / 2), new Vector3(Wall, Height, highLen), wall);
+            Box(room, "SideDoor_Lintel", new Vector3(HalfW + Wall / 2, 2.6f, SideDoorZ), new Vector3(Wall, 0.8f, 2f), wall);
             // Front wall with a 2 m doorway in the middle
             float seg = HalfW - 1f + Wall;
             Box(room, "Wall_Front_L", new Vector3(-1f - seg / 2, Height / 2, -HalfD - Wall / 2), new Vector3(seg, Height, Wall), wall);
             Box(room, "Wall_Front_R", new Vector3(1f + seg / 2, Height / 2, -HalfD - Wall / 2), new Vector3(seg, Height, Wall), wall);
             Box(room, "Door_Lintel", new Vector3(0, 2.6f, -HalfD - Wall / 2), new Vector3(2f, 0.8f, Wall), wall);
-            // Heavy blast door, swung open against the wall
-            Box(room, "BlastDoor", new Vector3(-1.9f, 1.1f, -HalfD + 0.15f), new Vector3(1.9f, 2.2f, 0.15f), metal);
+            // Heavy blast door, swung open against the wall, and hazard stripes on the door frames
+            Box(room, "BlastDoor", new Vector3(-1.9f, 1.1f, -HalfD + 0.15f), new Vector3(1.9f, 2.2f, 0.15f), olive);
+            HazardFrame(room, new Vector3(0, 0, -HalfD + 0.01f), Vector3.right, yellow, black);
+            HazardFrame(room, new Vector3(HalfW - 0.01f, 0, SideDoorZ), Vector3.forward, yellow, black);
 
-            // Entrance corridor (intruders come in from its dark end)
+            // Main entrance corridor (one way in)
             var corridor = Group(room, "Corridor");
             Box(corridor, "Floor", new Vector3(0, -0.1f, -8.15f), new Vector3(2.6f, 0.2f, 6.3f), floor);
             Box(corridor, "Ceiling", new Vector3(0, 2.3f, -8.15f), new Vector3(2.6f, 0.2f, 6.3f), ceiling);
@@ -86,24 +98,73 @@ namespace Game.EditorTools
             Box(corridor, "Wall_R", new Vector3(1.15f, 1.1f, -8.15f), new Vector3(Wall, 2.2f, 6.3f), wall);
             Box(corridor, "Wall_End", new Vector3(0, 1.1f, -11.45f), new Vector3(2.6f, 2.2f, Wall), wall);
 
-            // ---------- Furniture (also blocks the NavMesh) ----------
+            // Maintenance tunnel (the second way in), going out of the right wall
+            var tunnel = Group(room, "MaintenanceTunnel");
+            float tx = HalfW + 3f;
+            Box(tunnel, "Floor", new Vector3(tx, -0.1f, SideDoorZ), new Vector3(6.3f, 0.2f, 2.6f), floor);
+            Box(tunnel, "Ceiling", new Vector3(tx, 2.3f, SideDoorZ), new Vector3(6.3f, 0.2f, 2.6f), ceiling);
+            Box(tunnel, "Wall_A", new Vector3(tx, 1.1f, SideDoorZ - 1.15f), new Vector3(6.3f, 2.2f, Wall), wall);
+            Box(tunnel, "Wall_B", new Vector3(tx, 1.1f, SideDoorZ + 1.15f), new Vector3(6.3f, 2.2f, Wall), wall);
+            Box(tunnel, "Wall_End", new Vector3(HalfW + 6.3f, 1.1f, SideDoorZ), new Vector3(Wall, 2.2f, 2.6f), wall);
+            foreach (float off in new[] { -0.8f, -0.55f })
+                Box(tunnel, "Pipe", new Vector3(tx, 1.9f, SideDoorZ + off), new Vector3(0.14f, 3.1f, 0.14f), olive, PrimitiveType.Cylinder, Quaternion.Euler(0, 0, 90));
+
+            // ---------- Bunker furniture (blocks the NavMesh) ----------
             var props = Group(room, "Props");
             Box(props, "Pillar_L", new Vector3(-2.8f, Height / 2, 0.3f), new Vector3(0.6f, Height, 0.6f), wall);
             Box(props, "Pillar_R", new Vector3(2.8f, Height / 2, 0.3f), new Vector3(0.6f, Height, 0.6f), wall);
-            foreach (float z in new[] { -3.6f, -1.2f })
+
+            // Two-level bunk beds along the left wall
+            foreach (float z in new[] { -3.5f, -1.1f })
             {
-                Box(props, "Cot_Frame", new Vector3(-6.2f, 0.25f, z), new Vector3(0.9f, 0.1f, 2f), metal);
-                Box(props, "Cot_Mattress", new Vector3(-6.2f, 0.36f, z), new Vector3(0.8f, 0.12f, 1.9f), cloth);
+                foreach (var c in new[] { new Vector3(-6.75f, 0, z - 0.95f), new Vector3(-5.85f, 0, z - 0.95f), new Vector3(-6.75f, 0, z + 0.95f), new Vector3(-5.85f, 0, z + 0.95f) })
+                    Box(props, "Bunk_Post", c + Vector3.up * 0.9f, new Vector3(0.06f, 1.8f, 0.06f), olive);
+                foreach (float h in new[] { 0.4f, 1.4f })
+                {
+                    Box(props, "Bunk_Frame", new Vector3(-6.3f, h, z), new Vector3(0.95f, 0.08f, 2f), olive);
+                    Box(props, "Bunk_Mattress", new Vector3(-6.3f, h + 0.09f, z), new Vector3(0.85f, 0.1f, 1.9f), cloth);
+                    Box(props, "Bunk_Blanket", new Vector3(-6.3f, h + 0.15f, z + 0.3f), new Vector3(0.86f, 0.03f, 1.1f), olive);
+                }
             }
-            Box(props, "Crate_1", new Vector3(5.8f, 0.45f, -3.9f), new Vector3(0.9f, 0.9f, 0.9f), wood);
-            Box(props, "Crate_2", new Vector3(5.9f, 1.15f, -3.85f), new Vector3(0.6f, 0.5f, 0.6f), wood);
-            Box(props, "Crate_3", new Vector3(4.8f, 0.35f, -4.2f), new Vector3(0.7f, 0.7f, 0.7f), wood);
+            // Lockers
+            for (int i = 0; i < 3; i++)
+            {
+                float z = 1.2f + i * 0.55f;
+                Box(props, "Locker", new Vector3(-6.75f, 0.95f, z), new Vector3(0.5f, 1.9f, 0.52f), olive);
+                Box(props, "Locker_Vent", new Vector3(-6.49f, 1.6f, z), new Vector3(0.01f, 0.15f, 0.3f), black);
+            }
+            // Big water tanks in the back-left corner
+            Box(props, "WaterTank_1", new Vector3(-6.2f, 0.8f, 4.1f), new Vector3(0.9f, 1.6f, 0.9f), metal, PrimitiveType.Cylinder);
+            Box(props, "WaterTank_2", new Vector3(-5.2f, 0.8f, 4.3f), new Vector3(0.8f, 1.6f, 0.8f), metal, PrimitiveType.Cylinder);
+            // Generator + fuel cans in the front-right corner
+            Box(props, "Generator", new Vector3(5.7f, 0.45f, -4.2f), new Vector3(1.2f, 0.9f, 0.7f), olive);
+            Box(props, "Generator_Exhaust", new Vector3(6.1f, 1.5f, -4.35f), new Vector3(0.12f, 1.2f, 0.12f), black, PrimitiveType.Cylinder);
+            Box(props, "FuelCan_1", new Vector3(4.7f, 0.25f, -4.4f), new Vector3(0.3f, 0.5f, 0.2f), Mat("M_ShelterRed", $"{TexEnv}/T_PoleMetal.png", 2f, new Color(0.6f, 0.1f, 0.08f)));
+            Box(props, "Crate", new Vector3(4.6f, 0.35f, -3.6f), new Vector3(0.7f, 0.7f, 0.7f), wood);
+            // Radio table
             Box(props, "Table", new Vector3(3.2f, 0.75f, -2.2f), new Vector3(1.4f, 0.08f, 0.8f), wood);
             foreach (var p in new[] { new Vector3(2.6f, 0.37f, -2.5f), new Vector3(3.8f, 0.37f, -2.5f),
                                       new Vector3(2.6f, 0.37f, -1.9f), new Vector3(3.8f, 0.37f, -1.9f) })
                 Box(props, "TableLeg", p, new Vector3(0.08f, 0.74f, 0.08f), wood);
-            Box(props, "Barrel_1", new Vector3(-6.3f, 0.5f, 3.9f), new Vector3(0.7f, 1f, 0.7f), metal, PrimitiveType.Cylinder);
-            Box(props, "Barrel_2", new Vector3(-5.5f, 0.5f, 4.2f), new Vector3(0.7f, 1f, 0.7f), metal, PrimitiveType.Cylinder);
+            Box(props, "Radio", new Vector3(3.0f, 0.93f, -2.3f), new Vector3(0.5f, 0.28f, 0.3f), olive);
+            Box(props, "Radio_Antenna", new Vector3(3.2f, 1.3f, -2.35f), new Vector3(0.015f, 0.5f, 0.015f), black);
+            // Sandbags by the main door
+            foreach (float x in new[] { -2.4f, 2.4f })
+                for (int row = 0; row < 2; row++)
+                    for (int i = 0; i < 3 - row; i++)
+                        Box(props, "Sandbag", new Vector3(x + (i - (2 - row) / 2f) * 0.55f * Mathf.Sign(x), 0.14f + row * 0.24f, -4.55f),
+                            new Vector3(0.55f, 0.25f, 0.4f), sand);
+            // Ventilation ducts under the ceiling (no colliders: they're overhead)
+            foreach (float x in new[] { -3.9f, 3.9f })
+            {
+                var duct = Box(props, "VentDuct", new Vector3(x, Height - 0.3f, 0), new Vector3(0.6f, 0.4f, 2 * HalfD), metal);
+                Object.DestroyImmediate(duct.GetComponent<Collider>());
+            }
+            // Stencilled signs
+            Stencil(room, "SHELTER 7", new Vector3(0, 2.55f, HalfD - 0.01f), 0f, 9f, new Color(0.85f, 0.75f, 0.35f));
+            Stencil(room, "RADIATION\nHAZARD", new Vector3(-HalfW + 0.01f, 2.3f, 3.0f), -90f, 4f, new Color(0.95f, 0.8f, 0.1f));
+            Stencil(room, "MAINTENANCE", new Vector3(HalfW - 0.01f, 2.62f, SideDoorZ), 90f, 2.2f, new Color(0.85f, 0.75f, 0.35f));
+            Stencil(room, "RATION: 1 CAN / DAY", new Vector3(-HalfW + 0.01f, 1.6f, 0.4f), -90f, 2.6f, new Color(0.9f, 0.88f, 0.8f));
 
             // ---------- NavMesh (before shelves and player: shelves cut themselves out at runtime) ----------
             var navGo = new GameObject("ShelterNavMesh");
@@ -134,16 +195,19 @@ namespace Game.EditorTools
                 var so = new SerializedObject(shelf);
                 so.FindProperty("item").objectReferenceValue = data;
                 so.FindProperty("stock").intValue = s.stock;
-                Set(so, "frameColor", new Color(0.36f, 0.37f, 0.34f));  // dull army metal
-                Set(so, "boardColor", new Color(0.33f, 0.25f, 0.17f));  // dark wood
-                Set(so, "signStripe", new Color(0.32f, 0.36f, 0.18f));  // olive instead of shop red
+                so.FindProperty("bunkerRack").boolValue = true;        // military storage rack, not a shop shelf
+                so.FindProperty("lockItemsOnShelf").boolValue = true;  // E never takes supplies off the rack by accident
+                Set(so, "frameColor", new Color(0.30f, 0.33f, 0.20f));  // olive drab paint
+                Set(so, "boardColor", new Color(0.24f, 0.25f, 0.20f));  // grey-green steel boards
+                Set(so, "signColor", new Color(0.12f, 0.13f, 0.09f));
+                Set(so, "signStripe", new Color(0.85f, 0.7f, 0.1f));   // hazard yellow
                 so.ApplyModifiedPropertiesWithoutUndo();
                 shelfCount++;
             }
 
             // ---------- Light & atmosphere ----------
             RenderSettings.ambientMode = AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.10f, 0.11f, 0.10f);
+            RenderSettings.ambientLight = new Color(0.16f, 0.17f, 0.15f);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = new Color(0.03f, 0.035f, 0.03f);
@@ -161,6 +225,9 @@ namespace Game.EditorTools
             // Red emergency light over the doorway + a faint one deep in the corridor
             PointLight(lightsRoot, new Vector3(0, 2.1f, -5.6f), new Color(1f, 0.12f, 0.06f), 1.6f, 5f);
             PointLight(lightsRoot, new Vector3(0, 1.9f, -10.4f), new Color(0.6f, 0.1f, 0.05f), 0.8f, 4f);
+            // Amber light over the maintenance opening + a faint red one deep in the tunnel
+            PointLight(lightsRoot, new Vector3(HalfW - 0.6f, 2.1f, SideDoorZ), new Color(1f, 0.55f, 0.1f), 1.4f, 5f);
+            PointLight(lightsRoot, new Vector3(HalfW + 5.4f, 1.9f, SideDoorZ), new Color(0.6f, 0.1f, 0.05f), 0.8f, 4f);
 
             var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumePath);
             if (profile != null)
@@ -173,6 +240,8 @@ namespace Game.EditorTools
             // ---------- Entrance, player, director ----------
             var entrance = new GameObject("Intruder_Entrance").transform;
             entrance.SetPositionAndRotation(Snap(new Vector3(0, 0, -10.4f)), Quaternion.identity); // faces into the room
+            var entrance2 = new GameObject("Intruder_Entrance_Tunnel").transform;
+            entrance2.SetPositionAndRotation(Snap(new Vector3(HalfW + 5.4f, 0, SideDoorZ)), Quaternion.Euler(0, -90f, 0));
 
             var playerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPath);
             if (playerPrefab != null)
@@ -188,6 +257,14 @@ namespace Game.EditorTools
             var dso = new SerializedObject(director);
             dso.FindProperty("entrance").objectReferenceValue = entrance;
             dso.FindProperty("exit").objectReferenceValue = entrance;
+            var entrancesProp = dso.FindProperty("entrances"); // groups come in through either door
+            entrancesProp.arraySize = 2;
+            entrancesProp.GetArrayElementAtIndex(0).objectReferenceValue = entrance;
+            entrancesProp.GetArrayElementAtIndex(1).objectReferenceValue = entrance2;
+            var modelsProp = dso.FindProperty("characterModels");
+            var models = FindCharacterModels();
+            modelsProp.arraySize = models.Count;
+            for (int i = 0; i < models.Count; i++) modelsProp.GetArrayElementAtIndex(i).objectReferenceValue = models[i];
             var lightsProp = dso.FindProperty("flickerLights");
             lightsProp.arraySize = flicker.Count;
             for (int i = 0; i < flicker.Count; i++) lightsProp.GetArrayElementAtIndex(i).objectReferenceValue = flicker[i];
@@ -208,6 +285,19 @@ namespace Game.EditorTools
         }
 
         // ---------- Helpers ----------
+
+        /// <summary>The rigged low-poly men in Assets/Floreswa/Models (male01_1 ... male03_3).</summary>
+        public static List<GameObject> FindCharacterModels()
+        {
+            var list = new List<GameObject>();
+            foreach (string guid in AssetDatabase.FindAssets("male0 t:Model", new[] { "Assets/Floreswa/Models" }))
+            {
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+                if (go != null && go.GetComponentInChildren<SkinnedMeshRenderer>() != null) list.Add(go);
+            }
+            if (list.Count == 0) Debug.LogWarning("[Shelter] No character models in Assets/Floreswa/Models — NPCs use simple shapes.");
+            return list;
+        }
 
         static void Set(SerializedObject so, string prop, Color c)
         {
@@ -233,6 +323,44 @@ namespace Game.EditorTools
             var t = new GameObject(name).transform;
             if (parent != null) t.SetParent(parent, false);
             return t;
+        }
+
+        /// <summary>Yellow/black hazard stripes around a 2 m wide, 2.2 m high doorway.</summary>
+        static void HazardFrame(Transform parent, Vector3 bottomCentre, Vector3 across, Material yellow, Material black)
+        {
+            for (int side = -1; side <= 1; side += 2)
+                for (int i = 0; i < 9; i++)
+                {
+                    Vector3 size = across * 0.04f + Vector3.up * 0.24f + Vector3.Cross(across, Vector3.up).normalized * 0.32f;
+                    size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
+                    var go = Box(parent, "Hazard", bottomCentre + across * (side * 1.02f) + Vector3.up * (0.12f + i * 0.24f),
+                        size, i % 2 == 0 ? yellow : black);
+                    Object.DestroyImmediate(go.GetComponent<Collider>());
+                }
+        }
+
+        /// <summary>Stencil-style painted text on a wall (TextMeshPro, read from inside the room).</summary>
+        static void Stencil(Transform parent, string text, Vector3 pos, float yaw, float size, Color color)
+        {
+            var go = new GameObject("Stencil_" + text.Split('\n')[0], typeof(TMPro.TextMeshPro));
+            go.transform.SetParent(parent, false);
+            go.transform.SetPositionAndRotation(pos, Quaternion.Euler(0, yaw, 0));
+            var t = go.GetComponent<TMPro.TextMeshPro>();
+            t.text = text;
+            t.fontSize = size;
+            t.fontStyle = TMPro.FontStyles.Bold | TMPro.FontStyles.UpperCase;
+            t.characterSpacing = 12;
+            t.alignment = TMPro.TextAlignmentOptions.Center;
+            t.rectTransform.sizeDelta = new Vector2(6f, 1.5f);
+            t.color = new Color(color.r, color.g, color.b, 0.85f);
+        }
+
+        static GameObject Box(Transform parent, string name, Vector3 pos, Vector3 size, Material mat,
+            PrimitiveType type, Quaternion rotation)
+        {
+            var go = Box(parent, name, pos, size, mat, type);
+            go.transform.rotation = rotation;
+            return go;
         }
 
         static GameObject Box(Transform parent, string name, Vector3 pos, Vector3 size, Material mat,

@@ -33,6 +33,8 @@ namespace Game.Gameplay
         [SerializeField] private Transform spawnPoint;
         [SerializeField] private float firstShopperDelay = 1.5f;
         [SerializeField] private float spawnGap = 2.5f;
+        [Tooltip("Rigged low-poly human models; each shopper gets a random one (empty = simple shapes)")]
+        [SerializeField] private GameObject[] characterModels;
 
         [Header("Timer")]
         [SerializeField] private float timeLimit = 60f;
@@ -73,6 +75,7 @@ namespace Game.Gameplay
             yield return null; // shelves build and fill themselves first
             yield return null;
             _running = true;
+            GameAudio.Loop(Sfx.Hum, 0.08f); // fluorescent lights
             UpdateTimer();
             StartCoroutine(SpawnShoppers());
         }
@@ -83,7 +86,9 @@ namespace Game.Gameplay
             if (!_running || _over || _listDone) return;
             if (GameManager.Instance != null && GameManager.Instance.State != GameState.Playing) return; // paused
 
+            float before = _timeLeft;
             _timeLeft -= Time.deltaTime;
+            if (_timeLeft <= 10f && Mathf.CeilToInt(_timeLeft) < Mathf.CeilToInt(before)) GameAudio.Play(Sfx.Tick, 0.5f); // last 10 s
             if (_timeLeft <= 0f)
             {
                 _timeLeft = 0f;
@@ -114,16 +119,29 @@ namespace Game.Gameplay
             go.GetComponent<NavMeshAgent>().Warp(pos); // the agent was created at (0,0,0)
             var shopper = go.GetComponent<StoreShopper>();
             shopper.Round = this;
+            if (characterModels != null && characterModels.Length > 0)
+                shopper.BodyModel = characterModels[Random.Range(0, characterModels.Length)];
             _shoppers.Add(shopper);
         }
 
         public void OnItemsTaken(StoreShopper who, int count) =>
             Message(count > 1 ? "You took their stuff back!" : "Got it back!", 1.5f);
 
-        public void OnMess(StoreShopper who)
+        /// <summary>A shopper took a product off a shelf (the shelf count goes down because of this).</summary>
+        public void OnShopperGrabbed(StoreShopper who, Game.Interaction.Pickup item)
         {
-            if (Random.value < 0.35f) Message("They're wrecking the shelves!", 1.5f, Blood);
+            GameAudio.PlayAt(Sfx.Clatter, who.transform.position, 0.6f);
+            Message($"A shopper took {Pretty(item.ItemId)}", 1.8f);
         }
+
+        /// <summary>A shopper with full hands threw products off a shelf onto the floor.</summary>
+        public void OnMess(StoreShopper who, string itemId)
+        {
+            GameAudio.PlayAt(Sfx.Crash, who.transform.position, 0.8f);
+            Message($"A shopper knocked {Pretty(itemId)} off the shelf!", 1.8f, Blood);
+        }
+
+        private static string Pretty(string id) => string.IsNullOrEmpty(id) ? "something" : id.Replace('_', ' ').ToUpperInvariant();
 
         // ---------- Win / lose ----------
 
@@ -131,6 +149,7 @@ namespace Game.Gameplay
         {
             if (_over) return;
             _listDone = true; // timer stops — now get out through the exit (StoreExit → Level 2)
+            GameAudio.Play(Sfx.Win, 0.7f);
             _timerText.color = new Color(0.5f, 1f, 0.5f);
         }
 
@@ -138,6 +157,8 @@ namespace Game.Gameplay
         {
             if (_over) return;
             _over = true;
+            GameAudio.Play(Sfx.Alarm, 0.5f);
+            GameAudio.Play(Sfx.Lose, 0.7f);
             foreach (var s in _shoppers) if (s != null) s.Stop();
             if (GameManager.Instance != null) GameManager.Instance.GameOver(); // frees the cursor
 
@@ -338,16 +359,26 @@ namespace Game.Gameplay
             var scene = EditorSceneManager.GetActiveScene();
             if (scene.path != scenePath) scene = EditorSceneManager.OpenScene(scenePath);
 
-            var old = FindAnyObjectByType<StoreRound>();
-            if (old != null) DestroyImmediate(old.gameObject);
-
             var exit = GameObject.Find("NPC_Exit"); // Meryem's point on the sidewalk outside the door
             if (exit == null) Debug.LogWarning("[Store] No NPC_Exit in the scene — shoppers will spawn at the StoreRound object.");
 
-            var round = new GameObject("StoreRound").AddComponent<StoreRound>();
+            // Update the existing object, never recreate it: new file IDs turn into a second StoreRound
+            // when the scene is merged with someone else's branch.
+            var round = FindAnyObjectByType<StoreRound>();
+            if (round == null) round = new GameObject("StoreRound").AddComponent<StoreRound>();
+            if (round.GetComponent<StoreDecor>() == null) round.gameObject.AddComponent<StoreDecor>(); // post-nuclear look
             if (exit != null) round.transform.position = exit.transform.position;
             var so = new SerializedObject(round);
             so.FindProperty("spawnPoint").objectReferenceValue = exit != null ? exit.transform : null;
+            var modelsProp = so.FindProperty("characterModels");
+            var models = new List<GameObject>();
+            foreach (string guid in AssetDatabase.FindAssets("male0 t:Model", new[] { "Assets/Floreswa/Models" }))
+            {
+                var m = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid));
+                if (m != null && m.GetComponentInChildren<SkinnedMeshRenderer>() != null) models.Add(m);
+            }
+            modelsProp.arraySize = models.Count;
+            for (int i = 0; i < models.Count; i++) modelsProp.GetArrayElementAtIndex(i).objectReferenceValue = models[i];
             so.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.MarkSceneDirty(scene);
