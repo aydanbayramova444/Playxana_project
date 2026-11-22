@@ -27,13 +27,19 @@ namespace Game.Gameplay
         [SerializeField] private float surviveSeconds = 60f;
         [SerializeField] private float firstIntruderDelay = 3f;
         [Tooltip("Seconds between groups at the start → at the end of the round")]
-        [SerializeField] private Vector2 spawnInterval = new Vector2(7f, 4f);
+        [SerializeField] private Vector2 spawnInterval = new Vector2(6f, 3.5f);
         [Tooltip("How many come in together (min, max)")]
         [SerializeField] private Vector2Int groupSize = new Vector2Int(2, 3);
         [SerializeField] private int maxIntrudersAtOnce = 8;
 
+        [Header("Intruders")]
+        [Tooltip("Rigged low-poly human models; each intruder gets a random one (empty = simple shapes)")]
+        [SerializeField] private GameObject[] characterModels;
+
         [Header("Places")]
         [SerializeField] private Transform entrance;
+        [Tooltip("All ways in (main corridor, maintenance tunnel ...). Each group picks one; empty = only Entrance.")]
+        [SerializeField] private Transform[] entrances;
         [SerializeField] private Transform exit;
 
         [Header("Atmosphere")]
@@ -102,6 +108,8 @@ namespace Game.Gameplay
             _timeLeft = surviveSeconds;
             _nextSpawn = firstIntruderDelay;
             _running = true;
+            GameAudio.Loop(Sfx.Drone, 0.22f); // low rumble of the bunker
+            GameAudio.Loop(Sfx.Hum, 0.06f);   // the lamps
             Message("Protect your supplies.\nLeft click or E: hit a thief. 2-3 hits stop them.", 5f);
             UpdateHud();
         }
@@ -113,7 +121,9 @@ namespace Game.Gameplay
             UpdateMessage();
             if (!_running || _over) return;
 
+            float before = _timeLeft;
             _timeLeft -= Time.deltaTime;
+            if (_timeLeft <= 10f && Mathf.CeilToInt(_timeLeft) < Mathf.CeilToInt(before)) GameAudio.Play(Sfx.Tick, 0.5f); // last 10 s
             if (_timeLeft <= 0f)
             {
                 _timeLeft = 0f;
@@ -136,13 +146,18 @@ namespace Game.Gameplay
 
         // ---------- Called by intruders ----------
 
-        public void OnIntruderGrabbed(ShelterIntruder who, Game.Interaction.Pickup item) =>
-            Message($"Someone grabbed {Pretty(item.ItemId)}!", 2.5f, Blood);
+        public void OnIntruderGrabbed(ShelterIntruder who, Game.Interaction.Pickup item, bool fromFloor)
+        {
+            GameAudio.PlayAt(Sfx.Clatter, who.transform.position);
+            Message(fromFloor ? $"Someone snatched {Pretty(item.ItemId)} off the floor!"
+                              : $"Someone took {Pretty(item.ItemId)} off the shelf!", 2.5f, Blood);
+        }
 
         /// <summary>A hit that didn't finish them (they have 2–3 hits).</summary>
         public void OnIntruderHit(ShelterIntruder who, bool droppedItem)
         {
             Swing(); // pressing E on a thief also swings the bat
+            GameAudio.PlayAt(Sfx.Hit, who.transform.position + Vector3.up);
             Message(droppedItem ? "They dropped it! Grab it before someone else does." : "Hit!", 1.5f);
         }
 
@@ -151,6 +166,7 @@ namespace Game.Gameplay
         {
             _scared++;
             Swing();
+            GameAudio.PlayAt(knockedDown ? Sfx.KnockDown : Sfx.Hit, who.transform.position + Vector3.up);
             Message(knockedDown ? "Down." : "Ran off scared.", 1.5f);
         }
 
@@ -158,6 +174,7 @@ namespace Game.Gameplay
         {
             if (_over) return;
             _stolen++;
+            GameAudio.Play(Sfx.Steal);
             UpdateHud();
             Message($"{Pretty(itemId)} is gone.", 3f, Blood);
             if (_total > 0 && _stolen >= _total) EndRound(win: false);
@@ -170,27 +187,41 @@ namespace Game.Gameplay
         /// <summary>A small group walks in one after another (0.7 s apart, side by side).</summary>
         private IEnumerator SpawnGroup(int count)
         {
-            Message(count > 1 ? $"{count} of them are coming in..." : "Someone is coming in...", 2.5f);
+            Transform door = PickEntrance();
+            bool tunnel = door != entrance;
+            Message(count > 1 ? $"{count} of them are coming in{(tunnel ? " through the tunnel" : "")}..."
+                              : $"Someone is coming in{(tunnel ? " through the tunnel" : "")}...", 2.5f);
             for (int i = 0; i < count && !_over; i++)
             {
                 float side = count > 1 ? Mathf.Lerp(-0.5f, 0.5f, i / (float)(count - 1)) : 0f;
-                SpawnIntruder(side);
+                SpawnIntruder(side, door);
                 yield return new WaitForSeconds(0.7f);
             }
         }
 
-        private void SpawnIntruder(float sideOffset)
+        private Transform PickEntrance()
         {
-            if (entrance == null) return;
-            Vector3 pos = entrance.position + entrance.right * sideOffset;
+            var options = new List<Transform>();
+            if (entrances != null) foreach (var e in entrances) if (e != null) options.Add(e);
+            if (options.Count == 0) return entrance;
+            return options[Random.Range(0, options.Count)];
+        }
+
+        private void SpawnIntruder(float sideOffset, Transform door)
+        {
+            if (door == null) door = entrance;
+            if (door == null) return;
+            Vector3 pos = door.position + door.right * sideOffset;
             if (NavMesh.SamplePosition(pos, out NavMeshHit hit, 3f, NavMesh.AllAreas)) pos = hit.position;
 
             var go = new GameObject("Intruder", typeof(NavMeshAgent), typeof(ShelterIntruder));
-            go.transform.SetPositionAndRotation(pos, entrance.rotation);
+            go.transform.SetPositionAndRotation(pos, door.rotation);
             go.GetComponent<NavMeshAgent>().Warp(pos); // the agent was created at (0,0,0): move it onto the NavMesh here
             var intruder = go.GetComponent<ShelterIntruder>();
             intruder.Director = this;
-            intruder.Exit = exit != null ? exit : entrance;
+            if (characterModels != null && characterModels.Length > 0)
+                intruder.BodyModel = characterModels[Random.Range(0, characterModels.Length)];
+            intruder.Exit = door; // they run back out the way they came in
             _intruders.Add(intruder);
         }
 
@@ -199,6 +230,7 @@ namespace Game.Gameplay
             if (_over) return;
             _over = true;
             _running = false;
+            GameAudio.Play(win ? Sfx.Win : Sfx.Lose, 0.7f);
             foreach (var i in _intruders) if (i != null) i.Stop();
 
             if (GameManager.Instance != null)
@@ -402,6 +434,7 @@ namespace Game.Gameplay
 
         private void Swing()
         {
+            if (_bat != null && !_swinging) GameAudio.Play(Sfx.Whoosh, 0.5f);
             if (_bat != null && !_swinging) StartCoroutine(SwingRoutine());
         }
 

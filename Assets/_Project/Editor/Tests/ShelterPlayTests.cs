@@ -32,10 +32,12 @@ namespace Game.EditorTests
             Assert.Greater(d.TotalSupplies, 0, "No supplies were counted on the shelves.");
 
             int maxInside = 0;
+            bool shot = false;
             float start = Time.time;
             while (!d.IsOver && Time.time - start < 75f)
             {
                 maxInside = Mathf.Max(maxInside, d.IntrudersInside);
+                if (!shot && Time.time - start > 14f) { Shot("shelter_intruders"); shot = true; }
                 yield return null;
             }
 
@@ -206,6 +208,114 @@ namespace Game.EditorTests
             yield return new ExitPlayMode();
         }
 
+        [UnityTest]
+        public IEnumerator Supplies_NeverVanishWithoutBeingStolen()
+        {
+            EditorSceneManager.OpenScene(ScenePath);
+            yield return new EnterPlayMode();
+
+            ShelterDirector d = null;
+            yield return WaitForRound(r => d = r);
+
+            int lastShelf = -1, worst = 0;
+            float start = Time.time;
+            while (!d.IsOver && Time.time - start < 60f)
+            {
+                int shelf = 0, loose = 0, carried = 0, alive = 0;
+                foreach (var s in Object.FindObjectsByType<Shelf>()) shelf += s.Stock;
+                foreach (var p in Object.FindObjectsByType<Game.Interaction.Pickup>())
+                {
+                    alive++;
+                    if (p.IsHeld) carried++;
+                    else if (p.CurrentSlot == null) loose++;
+                }
+                int accounted = alive + d.Stolen;
+                if (accounted != d.TotalSupplies)
+                {
+                    worst = Mathf.Max(worst, Mathf.Abs(d.TotalSupplies - accounted));
+                    Debug.LogWarning($"[ShelterTest] MISMATCH t={Time.time - start:0.0}s total={d.TotalSupplies} " +
+                                     $"alive={alive} (shelf={shelf} loose={loose} carried={carried}) stolen={d.Stolen}");
+                }
+                if (shelf != lastShelf)
+                {
+                    Debug.Log($"[ShelterTest] t={Time.time - start:0.0}s shelf={shelf} loose={loose} carried={carried} stolen={d.Stolen} supplies={d.SuppliesLeft}");
+                    lastShelf = shelf;
+                }
+                yield return null;
+            }
+            Assert.AreEqual(0, worst, "Some supplies disappeared without being stolen.");
+
+            Time.timeScale = 1f;
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest]
+        public IEnumerator ShelfSupplies_CantBeGrabbedWithE_ButDroppedOnesCan()
+        {
+            EditorSceneManager.OpenScene(ScenePath);
+            yield return new EnterPlayMode();
+
+            ShelterDirector d = null;
+            yield return WaitForRound(r => d = r);
+
+            int onRack = 0;
+            foreach (var p in Object.FindObjectsByType<Game.Interaction.Pickup>())
+                if (p.CurrentSlot != null)
+                {
+                    onRack++;
+                    Assert.IsFalse(p.isActiveAndEnabled, $"{p.name} on a rack can be picked up with E — this was the 'supplies vanish' bug.");
+                }
+            Assert.Greater(onRack, 0);
+
+            // Knock one off like an intruder would: it must become pickable again
+            var shelf = Object.FindAnyObjectByType<Shelf>();
+            var item = shelf.TakeOneItem();
+            item.KnockByNpc(Vector3.up);
+            Assert.IsTrue(item.isActiveAndEnabled, "A supply on the floor should be pickable again.");
+            Debug.Log($"[ShelterTest] Lock: {onRack} rack items locked, dropped item pickable");
+
+            // Pictures of the new bunker interior
+            ShotFrom("shelter_room_back", new Vector3(0f, 1.7f, -3.5f), Quaternion.Euler(-5f, 0f, 0f));
+            ShotFrom("shelter_room_tunnel", new Vector3(-2f, 1.7f, 0f), Quaternion.Euler(-5f, 100f, 0f));
+            ShotFrom("shelter_room_bunks", new Vector3(2.5f, 1.7f, 1f), Quaternion.Euler(-5f, -120f, 0f));
+
+            Time.timeScale = 1f;
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest]
+        public IEnumerator Intruders_ComeThroughBothEntrances()
+        {
+            EditorSceneManager.OpenScene(ScenePath);
+            yield return new EnterPlayMode();
+
+            ShelterDirector d = null;
+            yield return WaitForRound(r => d = r);
+
+            var seen = new System.Collections.Generic.HashSet<ShelterIntruder>();
+            int main = 0, tunnel = 0;
+            float start = Time.time;
+            bool shot = false;
+            while (Time.time - start < 50f && (main == 0 || tunnel == 0))
+            {
+                foreach (var i in Object.FindObjectsByType<ShelterIntruder>())
+                {
+                    if (!seen.Add(i)) continue;
+                    Vector3 p = i.transform.position;
+                    if (p.x > 9f) tunnel++;
+                    else if (p.z < -8f) main++;
+                }
+                if (!shot && tunnel > 0) { Shot("shelter_tunnel_intruders"); shot = true; }
+                yield return null;
+            }
+            Debug.Log($"[ShelterTest] Entrances: main corridor={main}, maintenance tunnel={tunnel}");
+            Assert.Greater(main, 0, "Nobody came through the main corridor.");
+            Assert.Greater(tunnel, 0, "Nobody came through the maintenance tunnel.");
+
+            Time.timeScale = 1f;
+            yield return new ExitPlayMode();
+        }
+
         /// <summary>Waits until a ShelterDirector has counted the supplies and started, then speeds time up.</summary>
         static IEnumerator WaitForRound(System.Action<ShelterDirector> found, ShelterDirector notThis = null)
         {
@@ -223,6 +333,37 @@ namespace Game.EditorTests
                 Assert.Less(t, 15f, "ShelterDirector never started a round.");
                 yield return null;
             }
+        }
+
+        /// <summary>Saves what the player camera sees (only when HUMAN_RENDER_DIR is set) — for checking the look.</summary>
+        static void Shot(string name)
+        {
+            string dir = System.Environment.GetEnvironmentVariable("HUMAN_RENDER_DIR");
+            Camera cam = Camera.main;
+            if (string.IsNullOrEmpty(dir) || cam == null) return;
+            var rt = new RenderTexture(1280, 720, 24);
+            var old = cam.targetTexture;
+            cam.targetTexture = rt;
+            cam.Render();
+            cam.targetTexture = old;
+            RenderTexture.active = rt;
+            var tex = new Texture2D(1280, 720, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0);
+            tex.Apply();
+            RenderTexture.active = null;
+            System.IO.File.WriteAllBytes(System.IO.Path.Combine(dir, name + ".png"), tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            rt.Release();
+        }
+
+        static void ShotFrom(string name, Vector3 pos, Quaternion rot)
+        {
+            var cam = Camera.main;
+            if (cam == null) return;
+            Vector3 p0 = cam.transform.position; Quaternion r0 = cam.transform.rotation;
+            cam.transform.SetPositionAndRotation(pos, rot);
+            Shot(name);
+            cam.transform.SetPositionAndRotation(p0, r0);
         }
     }
 }
