@@ -115,17 +115,6 @@ Assets/
 
 ---
 
-## 👥 Who owns what
-
-| Member | Area | Folders |
-|---|---|---|
-| `NAME 1` | Core / GameManager / final build | `Scripts/Core`, `Scenes/Main.unity` |
-| `NAME 2` | Player / controls | `Scripts/Player` |
-| `NAME 3` | Gameplay / enemies / levels | `Scripts/Gameplay` |
-| `NAME 4` | UI / integrations (Xsolla) | `Scripts/UI`, `Scripts/Integrations` |
-
----
-
 ## 📏 Working rules
 
 ### Branches
